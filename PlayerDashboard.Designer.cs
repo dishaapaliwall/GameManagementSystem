@@ -637,6 +637,7 @@ namespace GameManagementSystem
             Controls.Add(label1);
             Controls.Add(panel1);
             Controls.Add(dataGridView1);
+            AutoScroll = true;
             Name = "PlayerDashboard";
             Text = "PlayerDashboard";
             Load += PlayerDashboard_Load;
