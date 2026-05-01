@@ -85,7 +85,44 @@ namespace GameManagementSystem
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            this.BackColor = Color.DarkOliveGreen;
+            CenterControls();
+        }
 
+        private void CenterControls()
+        {
+            this.WindowState = FormWindowState.Maximized;
+            
+            Panel p = new Panel();
+            int minX = int.MaxValue, minY = int.MaxValue, maxX = 0, maxY = 0;
+            
+            foreach (Control c in this.Controls)
+            {
+                if (c.Left < minX) minX = c.Left;
+                if (c.Top < minY) minY = c.Top;
+                if (c.Right > maxX) maxX = c.Right;
+                if (c.Bottom > maxY) maxY = c.Bottom;
+            }
+            
+            p.Size = new Size(maxX - minX, maxY - minY);
+            
+            Control[] ctrls = new Control[this.Controls.Count];
+            this.Controls.CopyTo(ctrls, 0);
+            
+            foreach (Control c in ctrls)
+            {
+                c.Left -= minX;
+                c.Top -= minY;
+                p.Controls.Add(c);
+            }
+            
+            p.Location = new Point((this.ClientSize.Width - p.Width) / 2, (this.ClientSize.Height - p.Height) / 2);
+            p.Anchor = AnchorStyles.None;
+            this.Controls.Add(p);
+
+            this.Resize += (s, ev) => {
+                p.Location = new Point((this.ClientSize.Width - p.Width) / 2, (this.ClientSize.Height - p.Height) / 2);
+            };
         }
 
         private void label1_Click(object sender, EventArgs e)

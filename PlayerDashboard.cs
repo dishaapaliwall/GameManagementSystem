@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Windows.Forms;
+using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 
 namespace GameManagementSystem
@@ -8,6 +9,7 @@ namespace GameManagementSystem
     public partial class PlayerDashboard : Form
     {
         string userId;
+        string connStr = "server=localhost;database=trial_1;uid=root;pwd=schetza@2005;";
 
         public PlayerDashboard(string uid)
         {
@@ -17,21 +19,67 @@ namespace GameManagementSystem
 
         private void PlayerDashboard_Load(object sender, EventArgs e)
         {
-            if (this.DesignMode || System.ComponentModel.LicenseManager.UsageMode == System.ComponentModel.LicenseUsageMode.Designtime)
-                return;
+            this.WindowState = FormWindowState.Maximized;
+            ApplyThemeToAllGrids();
+            LoadAllData();
+        }
 
-            string connStr = "server=localhost;database=trial_1;uid=root;pwd=schetza@2005;";
+        private void ApplyThemeToAllGrids()
+        {
+            DataGridView[] grids = {
+                dataGridViewAvailable, dataGridViewPurchased, dataGridViewTransactions,
+                dataGridViewStats, dataGridViewHistory, dataGridViewRequests, dataGridViewFriends
+            };
 
+            foreach (var grid in grids)
+            {
+                if (grid == null) continue;
+
+                grid.BackgroundColor = System.Drawing.Color.DarkOliveGreen;
+                grid.BorderStyle = BorderStyle.None;
+                grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+                grid.DefaultCellStyle.BackColor = System.Drawing.Color.DarkOliveGreen;
+                grid.DefaultCellStyle.ForeColor = System.Drawing.Color.White;
+                grid.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.OliveDrab;
+                grid.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.White;
+                grid.DefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+                grid.DefaultCellStyle.Padding = new Padding(5);
+
+                grid.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+                grid.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.DarkGreen;
+                grid.ColumnHeadersDefaultCellStyle.ForeColor = System.Drawing.Color.White;
+                grid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+                grid.ColumnHeadersDefaultCellStyle.Padding = new Padding(5);
+                grid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+                grid.ColumnHeadersHeight = 40;
+
+                grid.EnableHeadersVisualStyles = false;
+                grid.RowHeadersVisible = false;
+                grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+                grid.AllowUserToAddRows = false;
+                grid.AllowUserToDeleteRows = false;
+                grid.AllowUserToResizeRows = false;
+                grid.ReadOnly = true;
+                grid.GridColor = System.Drawing.Color.OliveDrab;
+
+                // Increase row height for better text visibility
+                grid.RowTemplate.Height = 35;
+                grid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            }
+        }
+
+        void LoadAllData()
+        {
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
                 conn.Open();
 
                 // USER INFO
-                string query1 = "SELECT username, email FROM users WHERE user_id=@id";
-                MySqlCommand cmd1 = new MySqlCommand(query1, conn);
+                MySqlCommand cmd1 = new MySqlCommand("SELECT username, email FROM users WHERE user_id=@id", conn);
                 cmd1.Parameters.AddWithValue("@id", userId);
-
                 MySqlDataReader reader = cmd1.ExecuteReader();
+
                 if (reader.Read())
                 {
                     label2.Text = "Welcome, " + reader["username"].ToString();
@@ -40,71 +88,96 @@ namespace GameManagementSystem
                 reader.Close();
 
                 // BALANCE
-                string query2 = "SELECT balance FROM wallet WHERE user_id=@id";
-                MySqlCommand cmd2 = new MySqlCommand(query2, conn);
+                MySqlCommand cmd2 = new MySqlCommand("SELECT balance FROM wallet WHERE user_id=@id", conn);
                 cmd2.Parameters.AddWithValue("@id", userId);
-
                 object balance = cmd2.ExecuteScalar();
                 label4.Text = "Balance: ₹ " + (balance == null ? "0" : balance.ToString());
 
                 // AVAILABLE GAMES
                 DataTable dt = new DataTable();
-                new MySqlDataAdapter("SELECT * FROM game WHERE approval_status='approved'", conn).Fill(dt);
+                new MySqlDataAdapter("SELECT game_id, title, genre, price, release_date, developer_id FROM game WHERE approval_status='approved'", conn).Fill(dt);
                 dataGridViewAvailable.DataSource = dt;
+                if (dataGridViewAvailable.Columns["game_id"] != null) dataGridViewAvailable.Columns["game_id"].Visible = false;
+                dataGridViewAvailable.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
 
                 // PURCHASED
                 DataTable dt2 = new DataTable();
                 MySqlDataAdapter da2 = new MySqlDataAdapter(
-                    "SELECT g.* FROM game g JOIN purchase p ON g.game_id=p.game_id WHERE p.user_id=@id", conn);
+                    "SELECT g.game_id, g.title, g.genre, g.price, g.release_date, g.developer_id FROM game g JOIN purchase p ON g.game_id=p.game_id WHERE p.user_id=@id AND g.approval_status='approved'", conn);
                 da2.SelectCommand.Parameters.AddWithValue("@id", userId);
                 da2.Fill(dt2);
                 dataGridViewPurchased.DataSource = dt2;
+                if (dataGridViewPurchased.Columns["game_id"] != null) dataGridViewPurchased.Columns["game_id"].Visible = false;
+                dataGridViewPurchased.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
 
-                // STATS
-                DataTable dtStats = new DataTable();
-                MySqlDataAdapter daStats = new MySqlDataAdapter(
-                    @"SELECT g.title AS Game,
-                             s.total_play_time AS PlayTime,
-                             s.rank_level AS RankLevel,
-                             s.experience AS Experience
-                      FROM player_game_stats s
-                      JOIN game g ON s.game_id = g.game_id
-                      WHERE s.user_id = @id", conn);
-                daStats.SelectCommand.Parameters.AddWithValue("@id", userId);
-                daStats.Fill(dtStats);
-                dataGridViewStats.DataSource = dtStats;
+                // HISTORY
+                LoadHistory();
+            }
 
-                // GAME HISTORY
+            LoadTransactions();
+            LoadFriends();
+            LoadFriendRequests();
+            LoadStats();
+        }
+
+        // Ensure the friendship table exists; create it if missing
+        private void EnsureFriendshipTableExists(MySqlConnection conn)
+        {
+            // expects an open connection
+            using (var check = new MySqlCommand(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'friendship'", conn))
+            {
+                int count = Convert.ToInt32(check.ExecuteScalar());
+                if (count == 0)
+                {
+                    string createSql = @"CREATE TABLE friendship (
+                        friendship_id INT AUTO_INCREMENT PRIMARY KEY,
+                        user_id_1 VARCHAR(50) NOT NULL,
+                        user_id_2 VARCHAR(50) NOT NULL,
+                        status ENUM('pending','accepted','declined') NOT NULL DEFAULT 'pending',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        INDEX idx_user1 (user_id_1),
+                        INDEX idx_user2 (user_id_2)
+                    ) ENGINE=InnoDB;";
+
+                    using (var createCmd = new MySqlCommand(createSql, conn))
+                    {
+                        createCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+        }
+
+        // 🔥 HISTORY REFRESH
+        void LoadHistory()
+        {
+            using (MySqlConnection conn = new MySqlConnection(connStr))
+            {
+                conn.Open();
+
                 DataTable dtHistory = new DataTable();
                 MySqlDataAdapter daHistory = new MySqlDataAdapter(
                     @"SELECT g.title AS Game,
                              p.score AS Score,
                              p.result AS Result,
-                             m.duration AS Duration,
-                             m.started_at AS PlayedOn
+                             m.duration AS 'Duration (sec)',
+                             m.started_at AS 'Played On'
                       FROM participation p
                       JOIN match_session m ON p.match_id = m.match_id
                       JOIN game g ON m.game_id = g.game_id
-                      WHERE p.user_id = @id", conn);
+                      WHERE p.user_id = @id
+                      ORDER BY m.started_at DESC", conn);
+
                 daHistory.SelectCommand.Parameters.AddWithValue("@id", userId);
                 daHistory.Fill(dtHistory);
+
                 dataGridViewHistory.DataSource = dtHistory;
-
-                // SOCIALS
-                DataTable dtSocial = new DataTable();
-                MySqlDataAdapter daSocial = new MySqlDataAdapter(
-                    "SELECT user1, user2, status FROM socials WHERE user1=@id OR user2=@id", conn);
-                daSocial.SelectCommand.Parameters.AddWithValue("@id", userId);
-                daSocial.Fill(dtSocial);
-                dataGridViewFriends.DataSource = dtSocial;
+                dataGridViewHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             }
-
-            LoadTransactions();
         }
 
         private void LoadTransactions()
         {
-            string connStr = "server=localhost;database=trial_1;uid=root;pwd=schetza@2005;";
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
                 conn.Open();
@@ -114,69 +187,455 @@ namespace GameManagementSystem
                 da.SelectCommand.Parameters.AddWithValue("@id", userId);
                 da.Fill(dt);
                 dataGridViewTransactions.DataSource = dt;
+                if (dataGridViewTransactions.Columns["transaction_id"] != null) dataGridViewTransactions.Columns["transaction_id"].Visible = false;
+                dataGridViewTransactions.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             }
         }
 
-        private void buttonAddMoney_Click(object sender, EventArgs e)
+        // 🔥 LOAD STATS — shows per-game stats for the logged-in player
+        private void LoadStats()
         {
-            if (textBoxAmount.Text == "") return;
-
-            decimal amount = Convert.ToDecimal(textBoxAmount.Text);
-
-            string connStr = "server=localhost;database=trial_1;uid=root;pwd=schetza@2005;";
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
                 conn.Open();
+                DataTable dt = new DataTable();
+                MySqlDataAdapter da = new MySqlDataAdapter(
+                    @"SELECT g.title AS Game,
+                             s.total_play_time AS PlayTime,
+                             s.experience AS XP,
+                             (SELECT COUNT(*) + 1
+                              FROM (
+                                  SELECT p_inner.user_id, m_inner.game_id, MAX(p_inner.score) as max_score, st_inner.total_play_time as p_time
+                                  FROM participation p_inner
+                                  JOIN match_session m_inner ON p_inner.match_id = m_inner.match_id
+                                  JOIN player_game_stats st_inner ON p_inner.user_id = st_inner.user_id AND m_inner.game_id = st_inner.game_id
+                                  GROUP BY p_inner.user_id, m_inner.game_id
+                              ) AS gb
+                              WHERE gb.game_id = s.game_id
+                                AND (gb.max_score > IFNULL((SELECT MAX(p_me.score) FROM participation p_me JOIN match_session m_me ON p_me.match_id = m_me.match_id WHERE p_me.user_id = s.user_id AND m_me.game_id = s.game_id), 0)
+                                     OR (gb.max_score = IFNULL((SELECT MAX(p_me.score) FROM participation p_me JOIN match_session m_me ON p_me.match_id = m_me.match_id WHERE p_me.user_id = s.user_id AND m_me.game_id = s.game_id), 0)
+                                         AND gb.p_time > s.total_play_time))
+                             ) AS 'Game Rank',
+                             IFNULL((SELECT MAX(p.score) 
+                                     FROM participation p 
+                                     JOIN match_session m ON p.match_id = m.match_id 
+                                     WHERE p.user_id = s.user_id AND m.game_id = s.game_id), 0) AS 'Highest Score'
+                      FROM player_game_stats s
+                      JOIN game g ON s.game_id = g.game_id
+                      WHERE s.user_id = @id", conn);
 
-                new MySqlCommand("UPDATE wallet SET balance = balance + @amt WHERE user_id=@id", conn)
-                {
-                    Parameters = {
-                        new MySqlParameter("@amt", amount),
-                        new MySqlParameter("@id", userId)
-                    }
-                }.ExecuteNonQuery();
-
-                MessageBox.Show("Money Added ✅");
+                da.SelectCommand.Parameters.AddWithValue("@id", userId);
+                da.Fill(dt);
+                dataGridViewStats.DataSource = dt;
+                dataGridViewStats.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             }
         }
 
-        private void buttonAddFriend_Click(object sender, EventArgs e)
+        // 🔥 LOAD FRIENDS — only shows accepted friends of the logged-in player
+        private void LoadFriends()
         {
-            string friendId = textBoxFriend.Text.Trim();
-            if (friendId == "") return;
-
-            string connStr = "server=localhost;database=trial_1;uid=root;pwd=schetza@2005;";
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
-                conn.Open();
-                new MySqlCommand(
-                    "INSERT INTO socials(user1,user2,since_date,status) VALUES(@u1,@u2,NOW(),'pending')", conn)
+                try
                 {
-                    Parameters = {
-                        new MySqlParameter("@u1", userId),
-                        new MySqlParameter("@u2", friendId)
-                    }
-                }.ExecuteNonQuery();
+                    conn.Open();
 
-                MessageBox.Show("Friend Request Sent ✅");
+                    // ensure the table exists before querying
+                    EnsureFriendshipTableExists(conn);
+
+                    DataTable dt = new DataTable();
+                    MySqlDataAdapter da = new MySqlDataAdapter(
+                        @"SELECT u.user_id AS FriendID, u.username AS FriendName, f.status AS Status
+                      FROM friendship f
+                      JOIN users u ON u.user_id = CASE
+                          WHEN f.user_id_1 = @id THEN f.user_id_2
+                          ELSE f.user_id_1
+                      END
+                      WHERE (f.user_id_1 = @id OR f.user_id_2 = @id)
+                        AND f.status IN ('accepted', 'declined')", conn);
+
+                    da.SelectCommand.Parameters.AddWithValue("@id", userId);
+                    da.Fill(dt);
+                    dataGridViewFriends.DataSource = dt;
+                    dataGridViewFriends.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                }
+                catch (MySqlException mex)
+                {
+                    // log or surface a friendly message; keep UI responsive
+                    Console.Error.WriteLine("DB error in LoadFriends: " + mex.Message);
+                    dataGridViewFriends.DataSource = new DataTable();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Unexpected error in LoadFriends: " + ex.Message);
+                    dataGridViewFriends.DataSource = new DataTable();
+                }
             }
         }
 
-        private void buttonAccept_Click(object sender, EventArgs e) { }
-        private void buttonReject_Click(object sender, EventArgs e) { }
-        private void buybutton_Click(object sender, EventArgs e) { }
+        // 🔥 LOAD FRIEND REQUESTS — shows pending requests sent TO the logged-in player
+        private void LoadFriendRequests()
+        {
+            using (MySqlConnection conn = new MySqlConnection(connStr))
+            {
+                try
+                {
+                    conn.Open();
 
-        private void label4_Click(object sender, EventArgs e) { }
-        private void label7_Click(object sender, EventArgs e) { }
-        private void textBoxAmount_TextChanged(object sender, EventArgs e) { }
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
+                    // ensure the table exists before querying
+                    EnsureFriendshipTableExists(conn);
 
+                    DataTable dt = new DataTable();
+                    MySqlDataAdapter da = new MySqlDataAdapter(
+                        @"SELECT f.friendship_id, u.user_id AS SenderID, u.username AS SenderName, f.status AS Status
+                      FROM friendship f
+                      JOIN users u ON u.user_id = f.user_id_1
+                      WHERE f.user_id_2 = @id
+                        AND f.status = 'pending'", conn);
+
+                    da.SelectCommand.Parameters.AddWithValue("@id", userId);
+                    da.Fill(dt);
+                    dataGridViewRequests.DataSource = dt;
+                    dataGridViewRequests.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                }
+                catch (MySqlException mex)
+                {
+                    Console.Error.WriteLine("DB error in LoadFriendRequests: " + mex.Message);
+                    dataGridViewRequests.DataSource = new DataTable();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Unexpected error in LoadFriendRequests: " + ex.Message);
+                    dataGridViewRequests.DataSource = new DataTable();
+                }
+            }
+        }
+
+        // 🔥 ADD FRIEND — sends a friend request (status = 'pending')
+        // User can type either a username (e.g. "player2") or a user_id (e.g. "p_102")
         private void buttonAddFriend_Click_1(object sender, EventArgs e)
         {
-            MessageBox.Show("Clicked");
+            string friendInput = textBoxFriend.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(friendInput))
+            {
+                MessageBox.Show("Enter a Username to add as friend");
+                return;
+            }
+
+            using (MySqlConnection conn = new MySqlConnection(connStr))
+            {
+                conn.Open();
+
+                // ensure table exists before manipulating it
+                EnsureFriendshipTableExists(conn);
+
+                // Try to find the user by username first, then by user_id
+                MySqlCommand findUser = new MySqlCommand(
+                    "SELECT user_id FROM users WHERE username=@input OR user_id=@input LIMIT 1", conn);
+                findUser.Parameters.AddWithValue("@input", friendInput);
+                object result = findUser.ExecuteScalar();
+
+                if (result == null)
+                {
+                    MessageBox.Show("User not found ❌");
+                    return;
+                }
+
+                string friendId = result.ToString();
+
+                if (friendId == userId)
+                {
+                    MessageBox.Show("You cannot add yourself as a friend ❌");
+                    return;
+                }
+
+                // Check if a friendship already exists (in either direction)
+                MySqlCommand checkFriend = new MySqlCommand(
+                    @"SELECT COUNT(*) FROM friendship
+                      WHERE (user_id_1=@id AND user_id_2=@fid)
+                         OR (user_id_1=@fid AND user_id_2=@id)", conn);
+                checkFriend.Parameters.AddWithValue("@id", userId);
+                checkFriend.Parameters.AddWithValue("@fid", friendId);
+                int exists = Convert.ToInt32(checkFriend.ExecuteScalar());
+
+                if (exists > 0)
+                {
+                    MessageBox.Show("Friend request already exists or you are already friends ❌");
+                    return;
+                }
+
+                // Insert new friendship with status 'pending'
+                MySqlCommand insertCmd = new MySqlCommand(
+                    "INSERT INTO friendship(user_id_1, user_id_2, status) VALUES(@id, @fid, 'pending')", conn);
+                insertCmd.Parameters.AddWithValue("@id", userId);
+                insertCmd.Parameters.AddWithValue("@fid", friendId);
+                insertCmd.ExecuteNonQuery();
+
+                MessageBox.Show("Friend Request Sent ✅");
+                textBoxFriend.Text = "";
+            }
+
+            LoadFriends();
+            LoadFriendRequests();
         }
 
-        private void textBoxFriend_TextChanged(object sender, EventArgs e)
+        // 🔥 ACCEPT FRIEND REQUEST
+        private void buttonAccept_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewRequests.CurrentRow == null)
+            {
+                MessageBox.Show("Select a request first");
+                return;
+            }
+
+            int friendshipId = Convert.ToInt32(dataGridViewRequests.CurrentRow.Cells["friendship_id"].Value);
+
+            using (MySqlConnection conn = new MySqlConnection(connStr))
+            {
+                conn.Open();
+
+                EnsureFriendshipTableExists(conn);
+
+                MySqlCommand cmd = new MySqlCommand(
+                    "UPDATE friendship SET status='accepted' WHERE friendship_id=@fid", conn);
+                cmd.Parameters.AddWithValue("@fid", friendshipId);
+                cmd.ExecuteNonQuery();
+
+                MessageBox.Show("Friend Request Accepted ✅");
+            }
+
+            LoadFriends();
+            LoadFriendRequests();
+        }
+
+        // 🔥 REJECT FRIEND REQUEST
+        private void buttonReject_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewRequests.CurrentRow == null)
+            {
+                MessageBox.Show("Select a request first");
+                return;
+            }
+
+            int friendshipId = Convert.ToInt32(dataGridViewRequests.CurrentRow.Cells["friendship_id"].Value);
+
+            using (MySqlConnection conn = new MySqlConnection(connStr))
+            {
+                conn.Open();
+
+                EnsureFriendshipTableExists(conn);
+
+                MySqlCommand cmd = new MySqlCommand(
+                    "UPDATE friendship SET status='declined' WHERE friendship_id=@fid", conn);
+                cmd.Parameters.AddWithValue("@fid", friendshipId);
+                cmd.ExecuteNonQuery();
+
+                MessageBox.Show("Friend Request Declined ❌");
+            }
+
+            LoadFriends();
+            LoadFriendRequests();
+        }
+
+        // 🔥 PLAY BUTTON (FINAL)
+        private void btnPlayGame_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewPurchased.CurrentRow == null)
+            {
+                MessageBox.Show("Select a game first");
+                return;
+            }
+
+            string gameName = dataGridViewPurchased.CurrentRow.Cells["title"].Value.ToString().ToLower();
+            int gameId = Convert.ToInt32(dataGridViewPurchased.CurrentRow.Cells["game_id"].Value);
+
+            if (gameName.Contains("pong") || gameName.Contains("ping") || gameName.Contains("game c"))
+            {
+                new PongGame(userId, gameId).ShowDialog();
+            }
+            else if (gameName.Contains("fakegame 1") || gameName.Contains("fakegame1") || gameName.Contains("game a"))
+            {
+                new FakeGame1(userId, gameId).ShowDialog();
+            }
+            else if (gameName.Contains("fakegame 2") || gameName.Contains("fakegame2") || gameName.Contains("game b"))
+            {
+                new FakeGame2(userId, gameId).ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("Game not implemented yet.");
+            }
+
+            LoadHistory(); // 🔥 refresh after game
+            LoadStats();
+        }
+
+        // 🔥 BUY BUTTON (FINAL)
+        private void buybutton_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewAvailable.CurrentRow == null)
+            {
+                MessageBox.Show("Select a game to buy");
+                return;
+            }
+
+            int gameId = Convert.ToInt32(dataGridViewAvailable.CurrentRow.Cells["game_id"].Value);
+            decimal price = Convert.ToDecimal(dataGridViewAvailable.CurrentRow.Cells["price"].Value);
+
+            using (MySqlConnection conn = new MySqlConnection(connStr))
+            {
+                conn.Open();
+
+                // CHECK IF ALREADY PURCHASED
+                MySqlCommand checkPurchased = new MySqlCommand("SELECT COUNT(*) FROM purchase WHERE user_id=@uid AND game_id=@gid", conn);
+                checkPurchased.Parameters.AddWithValue("@uid", userId);
+                checkPurchased.Parameters.AddWithValue("@gid", gameId);
+                int alreadyPurchased = Convert.ToInt32(checkPurchased.ExecuteScalar());
+
+                if (alreadyPurchased > 0)
+                {
+                    MessageBox.Show("Game is already purchased! 🎮", "Already Owned", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // CHECK BALANCE
+                MySqlCommand checkCmd = new MySqlCommand("SELECT balance FROM wallet WHERE user_id=@id", conn);
+                checkCmd.Parameters.AddWithValue("@id", userId);
+                decimal balance = Convert.ToDecimal(checkCmd.ExecuteScalar());
+
+                if (balance < price)
+                {
+                    MessageBox.Show("Insufficient balance ❌");
+                    return;
+                }
+
+                MySqlTransaction trans = conn.BeginTransaction();
+                try
+                {
+                    // DEDUCT MONEY
+                    new MySqlCommand("UPDATE wallet SET balance = balance - @amt WHERE user_id=@id", conn, trans)
+                    {
+                        Parameters = {
+                            new MySqlParameter("@amt", price),
+                            new MySqlParameter("@id", userId)
+                        }
+                    }.ExecuteNonQuery();
+
+                    // INSERT PURCHASE
+                    new MySqlCommand(
+                        "INSERT INTO purchase(user_id, game_id, price, purchase_date) VALUES(@uid,@gid,@price,NOW())", conn, trans)
+                    {
+                        Parameters = {
+                            new MySqlParameter("@uid", userId),
+                            new MySqlParameter("@gid", gameId),
+                            new MySqlParameter("@price", price)
+                        }
+                    }.ExecuteNonQuery();
+
+                    // LOG TRANSACTION
+                    new MySqlCommand(
+                        "INSERT INTO transaction(user_id, amount, transaction_type, transaction_status) VALUES(@uid2, @amt2, 'purchase', 'completed')", conn, trans)
+                    {
+                        Parameters = {
+                            new MySqlParameter("@uid2", userId),
+                            new MySqlParameter("@amt2", price)
+                        }
+                    }.ExecuteNonQuery();
+
+                    // COMMIT TRANSACTION
+                    trans.Commit();
+                    MessageBox.Show("Game Purchased ✅");
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    MessageBox.Show("Purchase failed! Transaction rolled back. Error: " + ex.Message);
+                }
+            }
+
+            LoadAllData(); // 🔥 refresh everything
+        }
+
+        private async void buttonAddMoney_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textBoxAmount.Text)) return;
+            if (!decimal.TryParse(textBoxAmount.Text, out decimal amount) || amount <= 0) return;
+
+            long newTransactionId = 0;
+
+            using (MySqlConnection conn = new MySqlConnection(connStr))
+            {
+                conn.Open();
+
+                // 1. LOG TRANSACTION AS PENDING
+                MySqlCommand cmd = new MySqlCommand(
+                    "INSERT INTO transaction(user_id, amount, transaction_type, transaction_status) VALUES(@uid, @amt, 'deposit', 'pending'); SELECT LAST_INSERT_ID();", conn);
+                cmd.Parameters.AddWithValue("@uid", userId);
+                cmd.Parameters.AddWithValue("@amt", amount);
+                newTransactionId = Convert.ToInt64(cmd.ExecuteScalar());
+            }
+
+            // Refresh just the transactions list so user sees "pending"
+            LoadTransactions();
+
+            // Disable button to prevent spamming
+            buttonAddMoney.Enabled = false;
+            buttonAddMoney.Text = "Processing...";
+
+            MessageBox.Show("Payment Initiated.\n\nWaiting for bank server confirmation...\n(Simulating a 5-second server delay for Viva demonstration)", "Bank Processing", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            // ⏳ SIMULATE SERVER DELAY
+            await Task.Delay(5000);
+
+            // 2. SERVER CONFIRMS: UPDATE TO COMPLETED & ADD MONEY
+            using (MySqlConnection conn = new MySqlConnection(connStr))
+            {
+                conn.Open();
+
+                // Update Transaction Status
+                new MySqlCommand($"UPDATE transaction SET transaction_status='completed' WHERE transaction_id={newTransactionId}", conn).ExecuteNonQuery();
+
+                // Update Wallet
+                MySqlCommand cmdWallet = new MySqlCommand("UPDATE wallet SET balance = balance + @amt WHERE user_id=@id", conn);
+                cmdWallet.Parameters.AddWithValue("@amt", amount);
+                cmdWallet.Parameters.AddWithValue("@id", userId);
+                cmdWallet.ExecuteNonQuery();
+            }
+
+            buttonAddMoney.Enabled = true;
+            buttonAddMoney.Text = "Add Money";
+            textBoxAmount.Text = "";
+
+            MessageBox.Show($"Payment Successful! ₹{amount} has been added to your wallet. ✅", "Transaction Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            // Refresh everything (wallet balance + transaction status)
+            LoadAllData();
+        }
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
+
+        private void label4_Click(object sender, EventArgs e) { }
+
+        private void label7_Click(object sender, EventArgs e) { }
+
+        private void textBoxAmount_TextChanged(object sender, EventArgs e) { }
+
+        private void lblInfo_Click(object sender, EventArgs e) { }
+        private void textBoxFriend_TextChanged(object sender, EventArgs e) { }
+
+        // 🔥 REFRESH STATS BUTTON
+        private void buttonRefreshStats_Click(object sender, EventArgs e)
+        {
+            LoadAllData();
+            MessageBox.Show("Refreshed! ✅", "Dashboard Updated", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void btnPlayGame_Click_1(object sender, EventArgs e)
+        {
+            btnPlayGame_Click(sender, e);
+        }
+
+        private void dataGridViewPurchased_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }

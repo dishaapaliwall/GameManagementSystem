@@ -1,4 +1,4 @@
-﻿namespace GameManagementSystem
+namespace GameManagementSystem
 {
     partial class PlayerDashboard
     {
@@ -28,6 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
+            buttonRefreshSocial = new Button();
+            buttonRefreshHistory = new Button();
+            buttonRefreshTransactions = new Button();
+            buttonRefreshPurchased = new Button();
+            buttonRefreshAvailable = new Button();
+            btnPlayGame = new Button();
             dataGridView1 = new DataGridView();
             panel1 = new Panel();
             label3 = new Label();
@@ -56,15 +62,15 @@
             dataGridViewHistory = new DataGridView();
             labelHistory = new Label();
             panelSocial = new Panel();
+            label13 = new Label();
+            label12 = new Label();
+            dataGridViewRequests = new DataGridView();
             buttonReject = new Button();
             buttonAccept = new Button();
             buttonAddFriend = new Button();
             textBoxFriend = new TextBox();
             dataGridViewFriends = new DataGridView();
             labelSocial = new Label();
-            dataGridViewRequests = new DataGridView();
-            label12 = new Label();
-            label13 = new Label();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             panel1.SuspendLayout();
             panel2.SuspendLayout();
@@ -77,9 +83,99 @@
             panelHistory.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewHistory).BeginInit();
             panelSocial.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridViewFriends).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridViewRequests).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewFriends).BeginInit();
             SuspendLayout();
+            // 
+            // buttonRefreshSocial
+            // 
+            buttonRefreshSocial.BackColor = Color.DarkOliveGreen;
+            buttonRefreshSocial.FlatAppearance.BorderSize = 0;
+            buttonRefreshSocial.FlatStyle = FlatStyle.Flat;
+            buttonRefreshSocial.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            buttonRefreshSocial.ForeColor = Color.White;
+            buttonRefreshSocial.Location = new Point(618, 443);
+            buttonRefreshSocial.Name = "buttonRefreshSocial";
+            buttonRefreshSocial.Size = new Size(112, 34);
+            buttonRefreshSocial.TabIndex = 10;
+            buttonRefreshSocial.Text = "Refresh";
+            buttonRefreshSocial.UseVisualStyleBackColor = false;
+            buttonRefreshSocial.Click += buttonRefreshStats_Click;
+            // 
+            // buttonRefreshHistory
+            // 
+            buttonRefreshHistory.BackColor = Color.DarkOliveGreen;
+            buttonRefreshHistory.FlatAppearance.BorderSize = 0;
+            buttonRefreshHistory.FlatStyle = FlatStyle.Flat;
+            buttonRefreshHistory.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            buttonRefreshHistory.ForeColor = Color.White;
+            buttonRefreshHistory.Location = new Point(533, 352);
+            buttonRefreshHistory.Name = "buttonRefreshHistory";
+            buttonRefreshHistory.Size = new Size(112, 34);
+            buttonRefreshHistory.TabIndex = 10;
+            buttonRefreshHistory.Text = "Refresh";
+            buttonRefreshHistory.UseVisualStyleBackColor = false;
+            buttonRefreshHistory.Click += buttonRefreshStats_Click;
+            // 
+            // buttonRefreshTransactions
+            // 
+            buttonRefreshTransactions.BackColor = Color.DarkOliveGreen;
+            buttonRefreshTransactions.FlatAppearance.BorderSize = 0;
+            buttonRefreshTransactions.FlatStyle = FlatStyle.Flat;
+            buttonRefreshTransactions.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            buttonRefreshTransactions.ForeColor = Color.White;
+            buttonRefreshTransactions.Location = new Point(533, 492);
+            buttonRefreshTransactions.Name = "buttonRefreshTransactions";
+            buttonRefreshTransactions.Size = new Size(112, 34);
+            buttonRefreshTransactions.TabIndex = 10;
+            buttonRefreshTransactions.Text = "Refresh";
+            buttonRefreshTransactions.UseVisualStyleBackColor = false;
+            buttonRefreshTransactions.Click += buttonRefreshStats_Click;
+            // 
+            // buttonRefreshPurchased
+            // 
+            buttonRefreshPurchased.BackColor = Color.DarkOliveGreen;
+            buttonRefreshPurchased.FlatAppearance.BorderSize = 0;
+            buttonRefreshPurchased.FlatStyle = FlatStyle.Flat;
+            buttonRefreshPurchased.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            buttonRefreshPurchased.ForeColor = Color.White;
+            buttonRefreshPurchased.Location = new Point(616, 946);
+            buttonRefreshPurchased.Name = "buttonRefreshPurchased";
+            buttonRefreshPurchased.Size = new Size(112, 34);
+            buttonRefreshPurchased.TabIndex = 10;
+            buttonRefreshPurchased.Text = "Refresh";
+            buttonRefreshPurchased.UseVisualStyleBackColor = false;
+            buttonRefreshPurchased.Click += buttonRefreshStats_Click;
+            // 
+            // buttonRefreshAvailable
+            // 
+            buttonRefreshAvailable.BackColor = Color.DarkOliveGreen;
+            buttonRefreshAvailable.FlatAppearance.BorderSize = 0;
+            buttonRefreshAvailable.FlatStyle = FlatStyle.Flat;
+            buttonRefreshAvailable.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            buttonRefreshAvailable.ForeColor = Color.White;
+            buttonRefreshAvailable.Location = new Point(616, 448);
+            buttonRefreshAvailable.Name = "buttonRefreshAvailable";
+            buttonRefreshAvailable.Size = new Size(112, 34);
+            buttonRefreshAvailable.TabIndex = 10;
+            buttonRefreshAvailable.Text = "Refresh";
+            buttonRefreshAvailable.UseVisualStyleBackColor = false;
+            buttonRefreshAvailable.Click += buttonRefreshStats_Click;
+            // 
+            // btnPlayGame
+            // 
+            btnPlayGame.BackColor = Color.DarkOliveGreen;
+            btnPlayGame.FlatAppearance.BorderSize = 0;
+            btnPlayGame.FlatStyle = FlatStyle.Flat;
+            btnPlayGame.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnPlayGame.ForeColor = Color.White;
+            btnPlayGame.Location = new Point(14, 952);
+            btnPlayGame.Name = "btnPlayGame";
+            btnPlayGame.Size = new Size(112, 52);
+            btnPlayGame.TabIndex = 6;
+            btnPlayGame.Text = "Play";
+            btnPlayGame.UseVisualStyleBackColor = false;
+            btnPlayGame.Click += btnPlayGame_Click;
             // 
             // dataGridView1
             // 
@@ -154,15 +250,18 @@
             // panel2
             // 
             panel2.BackColor = Color.OliveDrab;
+            panel2.Controls.Add(btnPlayGame);
             panel2.Controls.Add(dataGridViewPurchased);
             panel2.Controls.Add(buybutton);
             panel2.Controls.Add(dataGridViewAvailable);
             panel2.Controls.Add(label7);
             panel2.Controls.Add(label6);
+            panel2.Controls.Add(buttonRefreshAvailable);
+            panel2.Controls.Add(buttonRefreshPurchased);
             panel2.Controls.Add(label5);
             panel2.Location = new Point(26, 278);
             panel2.Name = "panel2";
-            panel2.Size = new Size(744, 499);
+            panel2.Size = new Size(744, 1027);
             panel2.TabIndex = 4;
             // 
             // dataGridViewPurchased
@@ -171,11 +270,12 @@
             dataGridViewPurchased.BorderStyle = BorderStyle.None;
             dataGridViewPurchased.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewPurchased.GridColor = Color.DarkOliveGreen;
-            dataGridViewPurchased.Location = new Point(14, 353);
+            dataGridViewPurchased.Location = new Point(14, 594);
             dataGridViewPurchased.Name = "dataGridViewPurchased";
             dataGridViewPurchased.RowHeadersWidth = 62;
-            dataGridViewPurchased.Size = new Size(714, 129);
+            dataGridViewPurchased.Size = new Size(714, 335);
             dataGridViewPurchased.TabIndex = 5;
+            dataGridViewPurchased.CellContentClick += dataGridViewPurchased_CellContentClick;
             // 
             // buybutton
             // 
@@ -183,9 +283,9 @@
             buybutton.FlatAppearance.BorderSize = 0;
             buybutton.FlatStyle = FlatStyle.Flat;
             buybutton.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            buybutton.Location = new Point(14, 250);
+            buybutton.Location = new Point(14, 459);
             buybutton.Name = "buybutton";
-            buybutton.Size = new Size(94, 40);
+            buybutton.Size = new Size(160, 40);
             buybutton.TabIndex = 4;
             buybutton.Text = "Buy Selected Game";
             buybutton.UseVisualStyleBackColor = false;
@@ -199,14 +299,14 @@
             dataGridViewAvailable.Location = new Point(14, 115);
             dataGridViewAvailable.Name = "dataGridViewAvailable";
             dataGridViewAvailable.RowHeadersWidth = 62;
-            dataGridViewAvailable.Size = new Size(714, 129);
+            dataGridViewAvailable.Size = new Size(714, 320);
             dataGridViewAvailable.TabIndex = 3;
             // 
             // label7
             // 
             label7.AutoSize = true;
             label7.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            label7.Location = new Point(3, 314);
+            label7.Location = new Point(3, 555);
             label7.Name = "label7";
             label7.Size = new Size(142, 36);
             label7.TabIndex = 2;
@@ -242,10 +342,11 @@
             panel3.Controls.Add(buttonAddMoney);
             panel3.Controls.Add(textBoxAmount);
             panel3.Controls.Add(label9);
+            panel3.Controls.Add(buttonRefreshTransactions);
             panel3.Controls.Add(label8);
             panel3.Location = new Point(792, 278);
             panel3.Name = "panel3";
-            panel3.Size = new Size(664, 499);
+            panel3.Size = new Size(664, 576);
             panel3.TabIndex = 5;
             // 
             // dataGridViewTransactions
@@ -334,12 +435,14 @@
             buttonRefreshStats.FlatAppearance.BorderSize = 0;
             buttonRefreshStats.FlatStyle = FlatStyle.Flat;
             buttonRefreshStats.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            buttonRefreshStats.ForeColor = Color.White;
             buttonRefreshStats.Location = new Point(616, 441);
             buttonRefreshStats.Name = "buttonRefreshStats";
             buttonRefreshStats.Size = new Size(112, 34);
-            buttonRefreshStats.TabIndex = 2;
+            buttonRefreshStats.TabIndex = 11;
             buttonRefreshStats.Text = "Refresh";
             buttonRefreshStats.UseVisualStyleBackColor = false;
+            buttonRefreshStats.Click += buttonRefreshStats_Click;
             // 
             // dataGridViewStats
             // 
@@ -367,10 +470,11 @@
             // 
             panelHistory.BackColor = Color.OliveDrab;
             panelHistory.Controls.Add(dataGridViewHistory);
+            panelHistory.Controls.Add(buttonRefreshHistory);
             panelHistory.Controls.Add(labelHistory);
-            panelHistory.Location = new Point(26, 797);
+            panelHistory.Location = new Point(792, 872);
             panelHistory.Name = "panelHistory";
-            panelHistory.Size = new Size(744, 509);
+            panelHistory.Size = new Size(664, 433);
             panelHistory.TabIndex = 7;
             // 
             // dataGridViewHistory
@@ -381,7 +485,7 @@
             dataGridViewHistory.Location = new Point(14, 61);
             dataGridViewHistory.Name = "dataGridViewHistory";
             dataGridViewHistory.RowHeadersWidth = 62;
-            dataGridViewHistory.Size = new Size(715, 435);
+            dataGridViewHistory.Size = new Size(631, 274);
             dataGridViewHistory.TabIndex = 1;
             // 
             // labelHistory
@@ -406,11 +510,43 @@
             panelSocial.Controls.Add(buttonAddFriend);
             panelSocial.Controls.Add(textBoxFriend);
             panelSocial.Controls.Add(dataGridViewFriends);
+            panelSocial.Controls.Add(buttonRefreshSocial);
             panelSocial.Controls.Add(labelSocial);
-            panelSocial.Location = new Point(792, 797);
+            panelSocial.Location = new Point(1473, 796);
             panelSocial.Name = "panelSocial";
             panelSocial.Size = new Size(744, 509);
             panelSocial.TabIndex = 8;
+            // 
+            // label13
+            // 
+            label13.AutoSize = true;
+            label13.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            label13.Location = new Point(18, 279);
+            label13.Name = "label13";
+            label13.Size = new Size(245, 36);
+            label13.TabIndex = 8;
+            label13.Text = "Incoming Requests";
+            // 
+            // label12
+            // 
+            label12.AutoSize = true;
+            label12.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            label12.Location = new Point(18, 98);
+            label12.Name = "label12";
+            label12.Size = new Size(149, 36);
+            label12.TabIndex = 7;
+            label12.Text = "My Friends";
+            // 
+            // dataGridViewRequests
+            // 
+            dataGridViewRequests.BackgroundColor = Color.DarkOliveGreen;
+            dataGridViewRequests.BorderStyle = BorderStyle.None;
+            dataGridViewRequests.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewRequests.Location = new Point(18, 318);
+            dataGridViewRequests.Name = "dataGridViewRequests";
+            dataGridViewRequests.RowHeadersWidth = 62;
+            dataGridViewRequests.Size = new Size(712, 120);
+            dataGridViewRequests.TabIndex = 6;
             // 
             // buttonReject
             // 
@@ -424,6 +560,7 @@
             buttonReject.TabIndex = 5;
             buttonReject.Text = "Reject";
             buttonReject.UseVisualStyleBackColor = false;
+            buttonReject.Click += buttonReject_Click;
             // 
             // buttonAccept
             // 
@@ -437,6 +574,7 @@
             buttonAccept.TabIndex = 4;
             buttonAccept.Text = "Accept";
             buttonAccept.UseVisualStyleBackColor = false;
+            buttonAccept.Click += buttonAccept_Click;
             // 
             // buttonAddFriend
             // 
@@ -486,37 +624,6 @@
             labelSocial.TabIndex = 0;
             labelSocial.Text = "Social";
             // 
-            // dataGridViewRequests
-            // 
-            dataGridViewRequests.BackgroundColor = Color.DarkOliveGreen;
-            dataGridViewRequests.BorderStyle = BorderStyle.None;
-            dataGridViewRequests.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewRequests.Location = new Point(18, 318);
-            dataGridViewRequests.Name = "dataGridViewRequests";
-            dataGridViewRequests.RowHeadersWidth = 62;
-            dataGridViewRequests.Size = new Size(712, 120);
-            dataGridViewRequests.TabIndex = 6;
-            // 
-            // label12
-            // 
-            label12.AutoSize = true;
-            label12.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            label12.Location = new Point(18, 98);
-            label12.Name = "label12";
-            label12.Size = new Size(149, 36);
-            label12.TabIndex = 7;
-            label12.Text = "My Friends";
-            // 
-            // label13
-            // 
-            label13.AutoSize = true;
-            label13.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            label13.Location = new Point(18, 279);
-            label13.Name = "label13";
-            label13.Size = new Size(245, 36);
-            label13.TabIndex = 8;
-            label13.Text = "Incoming Requests";
-            // 
             // PlayerDashboard
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
@@ -551,8 +658,8 @@
             ((System.ComponentModel.ISupportInitialize)dataGridViewHistory).EndInit();
             panelSocial.ResumeLayout(false);
             panelSocial.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridViewFriends).EndInit();
             ((System.ComponentModel.ISupportInitialize)dataGridViewRequests).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewFriends).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -571,6 +678,12 @@
         private Label label6;
         private Label label5;
         private Button buybutton;
+        private Button buttonRefreshSocial;
+        private Button buttonRefreshHistory;
+        private Button buttonRefreshTransactions;
+        private Button buttonRefreshPurchased;
+        private Button buttonRefreshAvailable;
+        private Button btnPlayGame;
         private DataGridView dataGridViewAvailable;
         private DataGridView dataGridViewPurchased;
         private TextBox textBoxAmount;
@@ -582,7 +695,6 @@
         private Panel panel4;
         private Label label11;
         private DataGridView dataGridViewStats;
-        private Button buttonRefreshStats;
         private Panel panelHistory;
         private Label labelHistory;
         private Panel panelSocial;
@@ -596,5 +708,7 @@
         private DataGridView dataGridViewRequests;
         private Label label13;
         private Label label12;
+        private Button buttonRefreshStats;
     }
 }
+

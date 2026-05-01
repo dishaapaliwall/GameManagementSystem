@@ -7,6 +7,12 @@
     <Compile Update="DeveloperDashBoard.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="FakeGame1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="FakeGame2.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -14,6 +20,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="PlayerDashboard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="PongGame.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
