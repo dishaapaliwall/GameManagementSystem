@@ -45,10 +45,12 @@ namespace GameManagementSystem
             panel1 = new Panel();
             label1 = new Label();
             panelMyGames = new Panel();
+            buttonRefreshPurchased = new Button();
             labelMyGames = new Label();
             labelMyGamesSub = new Label();
             labelMatchHistory = new Label();
             panelMatchHistory = new Panel();
+            button1 = new Button();
             labelMatchHistoryTitle = new Label();
             ((System.ComponentModel.ISupportInitialize)dataGridGames).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridMatches).BeginInit();
@@ -141,7 +143,7 @@ namespace GameManagementSystem
             dataGridGames.Location = new Point(14, 95);
             dataGridGames.Name = "dataGridGames";
             dataGridGames.RowHeadersWidth = 62;
-            dataGridGames.Size = new Size(714, 390);
+            dataGridGames.Size = new Size(714, 889);
             dataGridGames.TabIndex = 2;
             // 
             // dataGridMatches
@@ -153,7 +155,7 @@ namespace GameManagementSystem
             dataGridMatches.Location = new Point(17, 65);
             dataGridMatches.Name = "dataGridMatches";
             dataGridMatches.RowHeadersWidth = 62;
-            dataGridMatches.Size = new Size(711, 420);
+            dataGridMatches.Size = new Size(711, 919);
             dataGridMatches.TabIndex = 1;
             // 
             // panelManageGames
@@ -165,9 +167,9 @@ namespace GameManagementSystem
             panelManageGames.Controls.Add(textBoxGameCategory);
             panelManageGames.Controls.Add(buttonAddGame);
             panelManageGames.Controls.Add(buttonDeleteGame);
-            panelManageGames.Location = new Point(792, 278);
+            panelManageGames.Location = new Point(791, 278);
             panelManageGames.Name = "panelManageGames";
-            panelManageGames.Size = new Size(664, 230);
+            panelManageGames.Size = new Size(664, 205);
             panelManageGames.TabIndex = 2;
             // 
             // labelManageGames
@@ -257,9 +259,9 @@ namespace GameManagementSystem
             panelSocial.Controls.Add(buttonAccept);
             panelSocial.Controls.Add(buttonReject);
             panelSocial.Controls.Add(buttonRefreshSocial);
-            panelSocial.Location = new Point(792, 530);
+            panelSocial.Location = new Point(791, 505);
             panelSocial.Name = "panelSocial";
-            panelSocial.Size = new Size(664, 509);
+            panelSocial.Size = new Size(664, 825);
             panelSocial.TabIndex = 0;
             // 
             // labelSocial
@@ -317,14 +319,14 @@ namespace GameManagementSystem
             dataGridFriends.Location = new Point(18, 137);
             dataGridFriends.Name = "dataGridFriends";
             dataGridFriends.RowHeadersWidth = 62;
-            dataGridFriends.Size = new Size(620, 120);
+            dataGridFriends.Size = new Size(629, 264);
             dataGridFriends.TabIndex = 4;
             // 
             // label13
             // 
             label13.AutoSize = true;
             label13.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            label13.Location = new Point(18, 279);
+            label13.Location = new Point(18, 420);
             label13.Name = "label13";
             label13.Size = new Size(245, 36);
             label13.TabIndex = 5;
@@ -335,10 +337,10 @@ namespace GameManagementSystem
             dataGridRequests.BackgroundColor = Color.DarkOliveGreen;
             dataGridRequests.BorderStyle = BorderStyle.None;
             dataGridRequests.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridRequests.Location = new Point(18, 318);
+            dataGridRequests.Location = new Point(18, 459);
             dataGridRequests.Name = "dataGridRequests";
             dataGridRequests.RowHeadersWidth = 62;
-            dataGridRequests.Size = new Size(620, 120);
+            dataGridRequests.Size = new Size(629, 281);
             dataGridRequests.TabIndex = 6;
             // 
             // buttonAccept
@@ -348,7 +350,7 @@ namespace GameManagementSystem
             buttonAccept.FlatStyle = FlatStyle.Flat;
             buttonAccept.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             buttonAccept.ForeColor = Color.White;
-            buttonAccept.Location = new Point(42, 444);
+            buttonAccept.Location = new Point(46, 756);
             buttonAccept.Name = "buttonAccept";
             buttonAccept.Size = new Size(112, 52);
             buttonAccept.TabIndex = 7;
@@ -363,7 +365,7 @@ namespace GameManagementSystem
             buttonReject.FlatStyle = FlatStyle.Flat;
             buttonReject.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             buttonReject.ForeColor = Color.White;
-            buttonReject.Location = new Point(173, 444);
+            buttonReject.Location = new Point(177, 756);
             buttonReject.Name = "buttonReject";
             buttonReject.Size = new Size(112, 52);
             buttonReject.TabIndex = 8;
@@ -378,7 +380,7 @@ namespace GameManagementSystem
             buttonRefreshSocial.FlatStyle = FlatStyle.Flat;
             buttonRefreshSocial.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             buttonRefreshSocial.ForeColor = Color.White;
-            buttonRefreshSocial.Location = new Point(520, 444);
+            buttonRefreshSocial.Location = new Point(535, 756);
             buttonRefreshSocial.Name = "buttonRefreshSocial";
             buttonRefreshSocial.Size = new Size(112, 34);
             buttonRefreshSocial.TabIndex = 9;
@@ -443,13 +445,28 @@ namespace GameManagementSystem
             // panelMyGames
             // 
             panelMyGames.BackColor = Color.OliveDrab;
+            panelMyGames.Controls.Add(buttonRefreshPurchased);
             panelMyGames.Controls.Add(labelMyGames);
             panelMyGames.Controls.Add(labelMyGamesSub);
             panelMyGames.Controls.Add(dataGridGames);
             panelMyGames.Location = new Point(26, 278);
             panelMyGames.Name = "panelMyGames";
-            panelMyGames.Size = new Size(744, 500);
+            panelMyGames.Size = new Size(744, 1052);
             panelMyGames.TabIndex = 3;
+            // 
+            // buttonRefreshPurchased
+            // 
+            buttonRefreshPurchased.BackColor = Color.DarkOliveGreen;
+            buttonRefreshPurchased.FlatAppearance.BorderSize = 0;
+            buttonRefreshPurchased.FlatStyle = FlatStyle.Flat;
+            buttonRefreshPurchased.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            buttonRefreshPurchased.ForeColor = Color.White;
+            buttonRefreshPurchased.Location = new Point(616, 1001);
+            buttonRefreshPurchased.Name = "buttonRefreshPurchased";
+            buttonRefreshPurchased.Size = new Size(112, 34);
+            buttonRefreshPurchased.TabIndex = 11;
+            buttonRefreshPurchased.Text = "Refresh";
+            buttonRefreshPurchased.UseVisualStyleBackColor = false;
             // 
             // labelMyGames
             // 
@@ -482,12 +499,27 @@ namespace GameManagementSystem
             // panelMatchHistory
             // 
             panelMatchHistory.BackColor = Color.OliveDrab;
+            panelMatchHistory.Controls.Add(button1);
             panelMatchHistory.Controls.Add(labelMatchHistoryTitle);
             panelMatchHistory.Controls.Add(dataGridMatches);
             panelMatchHistory.Location = new Point(1473, 278);
             panelMatchHistory.Name = "panelMatchHistory";
-            panelMatchHistory.Size = new Size(744, 500);
+            panelMatchHistory.Size = new Size(744, 1052);
             panelMatchHistory.TabIndex = 1;
+            // 
+            // button1
+            // 
+            button1.BackColor = Color.DarkOliveGreen;
+            button1.FlatAppearance.BorderSize = 0;
+            button1.FlatStyle = FlatStyle.Flat;
+            button1.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            button1.ForeColor = Color.White;
+            button1.Location = new Point(616, 1001);
+            button1.Name = "button1";
+            button1.Size = new Size(112, 34);
+            button1.TabIndex = 11;
+            button1.Text = "Refresh";
+            button1.UseVisualStyleBackColor = false;
             // 
             // labelMatchHistoryTitle
             // 
@@ -580,5 +612,7 @@ namespace GameManagementSystem
 
         private System.Windows.Forms.Button btnLogout;
         private System.Windows.Forms.Label labelMatchHistory;
+        private Button buttonRefreshPurchased;
+        private Button button1;
     }
 }

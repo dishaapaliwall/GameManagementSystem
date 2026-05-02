@@ -101,7 +101,7 @@ namespace GameManagementSystem
             buttonRefreshSocial.TabIndex = 10;
             buttonRefreshSocial.Text = "Refresh";
             buttonRefreshSocial.UseVisualStyleBackColor = false;
-            buttonRefreshSocial.Click += buttonRefreshStats_Click;
+            buttonRefreshSocial.Click += buttonRefreshSocial_Click;
             // 
             // buttonRefreshHistory
             // 
@@ -116,7 +116,7 @@ namespace GameManagementSystem
             buttonRefreshHistory.TabIndex = 10;
             buttonRefreshHistory.Text = "Refresh";
             buttonRefreshHistory.UseVisualStyleBackColor = false;
-            buttonRefreshHistory.Click += buttonRefreshStats_Click;
+            buttonRefreshHistory.Click += buttonRefreshHistory_Click;
             // 
             // buttonRefreshTransactions
             // 
@@ -131,7 +131,7 @@ namespace GameManagementSystem
             buttonRefreshTransactions.TabIndex = 10;
             buttonRefreshTransactions.Text = "Refresh";
             buttonRefreshTransactions.UseVisualStyleBackColor = false;
-            buttonRefreshTransactions.Click += buttonRefreshStats_Click;
+            buttonRefreshTransactions.Click += buttonRefreshTransactions_Click;
             // 
             // buttonRefreshPurchased
             // 
@@ -146,7 +146,7 @@ namespace GameManagementSystem
             buttonRefreshPurchased.TabIndex = 10;
             buttonRefreshPurchased.Text = "Refresh";
             buttonRefreshPurchased.UseVisualStyleBackColor = false;
-            buttonRefreshPurchased.Click += buttonRefreshStats_Click;
+            buttonRefreshPurchased.Click += buttonRefreshPurchased_Click;
             // 
             // buttonRefreshAvailable
             // 
@@ -161,7 +161,7 @@ namespace GameManagementSystem
             buttonRefreshAvailable.TabIndex = 10;
             buttonRefreshAvailable.Text = "Refresh";
             buttonRefreshAvailable.UseVisualStyleBackColor = false;
-            buttonRefreshAvailable.Click += buttonRefreshStats_Click;
+            buttonRefreshAvailable.Click += buttonRefreshAvailable_Click;
             // 
             // btnPlayGame
             // 

@@ -232,14 +232,14 @@ namespace GameManagementSystem
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand("INSERT INTO game (title, genre, price, release_date, developer_id, approval_status) VALUES (@t, @g, @p, NOW(), @d, 'approved')", conn);
+                    MySqlCommand cmd = new MySqlCommand("INSERT INTO game (title, genre, price, release_date, developer_id, approval_status) VALUES (@t, @g, @p, NOW(), @d, 'pending')", conn);
                     cmd.Parameters.AddWithValue("@t", title);
                     cmd.Parameters.AddWithValue("@g", genre);
                     cmd.Parameters.AddWithValue("@p", price);
                     cmd.Parameters.AddWithValue("@d", userId);
                     cmd.ExecuteNonQuery();
 
-                    MessageBox.Show("Game added successfully! ✅");
+                    MessageBox.Show("Game created! Request to Admin sent ✅", "Pending Approval", MessageBoxButtons.OK, MessageBoxIcon.None);
                     textBoxGameName.Text = "";
                     textBoxGamePrice.Text = "";
                     textBoxGameCategory.Text = "";
@@ -428,6 +428,7 @@ namespace GameManagementSystem
         {
             LoadFriends();
             LoadFriendRequests();
+            MessageBox.Show("Refreshed! ✅", "Social", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
 
         // 🔹 LOGOUT

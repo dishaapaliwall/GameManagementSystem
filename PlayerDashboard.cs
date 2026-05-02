@@ -670,11 +670,42 @@ namespace GameManagementSystem
         private void lblInfo_Click(object sender, EventArgs e) { }
         private void textBoxFriend_TextChanged(object sender, EventArgs e) { }
 
-        // 🔥 REFRESH STATS BUTTON
+        // 🔥 INDIVIDUAL REFRESH BUTTONS
         private void buttonRefreshStats_Click(object sender, EventArgs e)
         {
+            LoadStats();
+            MessageBox.Show("Refreshed! ✅", "Stats", MessageBoxButtons.OK, MessageBoxIcon.None);
+        }
+
+        private void buttonRefreshAvailable_Click(object sender, EventArgs e)
+        {
             LoadAllData();
-            MessageBox.Show("Refreshed! ✅", "Dashboard Updated", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Refreshed! ✅", "Games", MessageBoxButtons.OK, MessageBoxIcon.None);
+        }
+
+        private void buttonRefreshPurchased_Click(object sender, EventArgs e)
+        {
+            LoadAllData();
+            MessageBox.Show("Refreshed! ✅", "My Games", MessageBoxButtons.OK, MessageBoxIcon.None);
+        }
+
+        private void buttonRefreshTransactions_Click(object sender, EventArgs e)
+        {
+            LoadTransactions();
+            MessageBox.Show("Refreshed! ✅", "Wallet", MessageBoxButtons.OK, MessageBoxIcon.None);
+        }
+
+        private void buttonRefreshHistory_Click(object sender, EventArgs e)
+        {
+            LoadHistory();
+            MessageBox.Show("Refreshed! ✅", "History", MessageBoxButtons.OK, MessageBoxIcon.None);
+        }
+
+        private void buttonRefreshSocial_Click(object sender, EventArgs e)
+        {
+            LoadFriends();
+            LoadFriendRequests();
+            MessageBox.Show("Refreshed! ✅", "Social", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
 
         private void btnPlayGame_Click_1(object sender, EventArgs e)

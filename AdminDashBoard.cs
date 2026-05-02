@@ -57,7 +57,7 @@ namespace GameManagementSystem
                 grid.EnableHeadersVisualStyles = false;
                 grid.RowHeadersVisible = false;
                 grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-                grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
                 grid.AllowUserToAddRows = false;
                 grid.AllowUserToDeleteRows = false;
                 grid.AllowUserToResizeRows = false;
@@ -87,15 +87,6 @@ namespace GameManagementSystem
                         }
                     }
 
-                    try
-                    {
-                        MySqlCommand cmdRole = new MySqlCommand("SELECT role FROM admin WHERE user_id=@uid", conn);
-                        cmdRole.Parameters.AddWithValue("@uid", userId);
-                        object role = cmdRole.ExecuteScalar();
-                        if (role != null) labelRole.Text = "Role: " + role.ToString();
-                    }
-                    catch { }
-
                     RefreshBalance(conn);
                 }
                 catch (Exception ex)
@@ -111,9 +102,8 @@ namespace GameManagementSystem
             MySqlCommand cmdBalance = new MySqlCommand("SELECT balance FROM wallet WHERE user_id=@uid", conn);
             cmdBalance.Parameters.AddWithValue("@uid", userId);
             object balance = cmdBalance.ExecuteScalar();
-            string balText = "Balance: ₹" + (balance != null ? Convert.ToDecimal(balance).ToString("N2") : "0.00");
+            string balText = "Revenue: ₹" + (balance != null ? Convert.ToDecimal(balance).ToString("N2") : "0.00");
             labelBalance.Text = balText;
-            labelWalletBalance.Text = balText;
         }
 
         private void EnsureWalletExists(string uid, MySqlConnection conn, MySqlTransaction trans)
@@ -179,8 +169,10 @@ namespace GameManagementSystem
                 try
                 {
                     conn.Open();
-                    // Removed 'created_at' as it does not exist in the trial_2 schema
-                    string queryTrans = "SELECT transaction_id, amount, reference_id, reference_type, transaction_type FROM transaction WHERE user_id=@uid";
+                    string queryTrans = @"SELECT t.transaction_id, t.amount AS Amount, t.transaction_type AS Type, 
+                        t.description AS Description, t.reference_id AS 'Ref ID', 
+                        t.transaction_status AS Status, t.created_at AS Date 
+                        FROM transaction t WHERE t.user_id=@uid ORDER BY t.created_at DESC";
                     MySqlDataAdapter da = new MySqlDataAdapter(queryTrans, conn);
                     da.SelectCommand.Parameters.AddWithValue("@uid", userId);
                     DataTable dt = new DataTable();
@@ -201,6 +193,7 @@ namespace GameManagementSystem
             int gameId = Convert.ToInt32(dgvPendingGames.CurrentRow.Cells["game_id"].Value);
             string devId = dgvPendingGames.CurrentRow.Cells["developer_id"].Value.ToString();
             decimal price = Convert.ToDecimal(dgvPendingGames.CurrentRow.Cells["price"].Value);
+            string gameTitle = dgvPendingGames.CurrentRow.Cells["title"].Value.ToString();
 
             decimal devAmount = price * 0.95m;
             decimal adminAmount = price * 0.05m;
@@ -230,16 +223,18 @@ namespace GameManagementSystem
                         cmdAdminWallet.Parameters.AddWithValue("@uid", userId);
                         cmdAdminWallet.ExecuteNonQuery();
 
-                        MySqlCommand cmdTDev = new MySqlCommand("INSERT INTO transaction(user_id, amount, reference_id, reference_type, transaction_type, transaction_status) VALUES(@uid, @amt, @ref, 'sale', 'credit', 'completed')", conn, trans);
+                        MySqlCommand cmdTDev = new MySqlCommand("INSERT INTO transaction(user_id, amount, description, transaction_type, reference_id, payment_method, transaction_status) VALUES(@uid, @amt, @desc, 'credit', @ref, 'System', 'completed')", conn, trans);
                         cmdTDev.Parameters.AddWithValue("@uid", devId);
                         cmdTDev.Parameters.AddWithValue("@amt", devAmount);
                         cmdTDev.Parameters.AddWithValue("@ref", "GAME_" + gameId);
+                        cmdTDev.Parameters.AddWithValue("@desc", "Sale: " + gameTitle);
                         cmdTDev.ExecuteNonQuery();
 
-                        MySqlCommand cmdTAdmin = new MySqlCommand("INSERT INTO transaction(user_id, amount, reference_id, reference_type, transaction_type, transaction_status) VALUES(@uid, @amt, @ref, 'commission', 'credit', 'completed')", conn, trans);
+                        MySqlCommand cmdTAdmin = new MySqlCommand("INSERT INTO transaction(user_id, amount, description, transaction_type, reference_id, payment_method, transaction_status) VALUES(@uid, @amt, @desc, 'credit', @ref, 'System', 'completed')", conn, trans);
                         cmdTAdmin.Parameters.AddWithValue("@uid", userId);
                         cmdTAdmin.Parameters.AddWithValue("@amt", adminAmount);
                         cmdTAdmin.Parameters.AddWithValue("@ref", "COMM_" + gameId);
+                        cmdTAdmin.Parameters.AddWithValue("@desc", "Commission: " + gameTitle + " (₹" + price + ")");
                         cmdTAdmin.ExecuteNonQuery();
 
                         trans.Commit();
@@ -293,35 +288,34 @@ namespace GameManagementSystem
             LoadGameHistory();
             LoadAdminWalletData();
         }
-        private void btnSeedData_Click(object sender, EventArgs e)
+        private void btnLogout_Click(object sender, EventArgs e)
         {
+            Form1 f1 = new Form1();
+            f1.Show();
+            this.Close();
+        }
+
+        private void btnRefreshPending_Click(object sender, EventArgs e)
+        {
+            LoadPendingGames();
+            MessageBox.Show("Refreshed! ✅", "Pending Requests", MessageBoxButtons.OK, MessageBoxIcon.None);
+        }
+
+        private void btnRefreshApprovals_Click(object sender, EventArgs e)
+        {
+            LoadGameHistory();
+            MessageBox.Show("Refreshed! ✅", "Game Approvals", MessageBoxButtons.OK, MessageBoxIcon.None);
+        }
+
+        private void btnRefreshWallet_Click(object sender, EventArgs e)
+        {
+            LoadAdminWalletData();
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
-                try
-                {
-                    conn.Open();
-                    string[] titles = { "Cyberpunk 2077", "Elden Ring", "Hades", "Stardew Valley", "Among Us" };
-                    string[] genres = { "RPG", "Action", "Rogue-like", "Simulation", "Social" };
-                    decimal[] prices = { 59.99m, 49.99m, 24.99m, 14.99m, 4.99m };
-
-                    for (int i = 0; i < titles.Length; i++)
-                    {
-                        string insQuery = "INSERT INTO game (title, genre, price, developer_id, approval_status) VALUES (@t, @g, @p, 'd_210', 'pending')";
-                        MySqlCommand cmd = new MySqlCommand(insQuery, conn);
-                        cmd.Parameters.AddWithValue("@t", titles[i]);
-                        cmd.Parameters.AddWithValue("@g", genres[i]);
-                        cmd.Parameters.AddWithValue("@p", prices[i]);
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    MessageBox.Show("5 New Pending Games added to Database!");
-                    LoadPendingGames();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error seeding data: " + ex.Message);
-                }
+                conn.Open();
+                RefreshBalance(conn);
             }
+            MessageBox.Show("Refreshed! ✅", "Admin Wallet", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
     }
 }
