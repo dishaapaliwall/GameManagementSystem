@@ -337,6 +337,12 @@ namespace GameManagementSystem
                     return;
                 }
 
+                if (friendId.StartsWith("a_"))
+                {
+                    MessageBox.Show("You cannot send friend requests to an Admin ❌");
+                    return;
+                }
+
                 // Check if a friendship already exists (in either direction)
                 MySqlCommand checkFriend = new MySqlCommand(
                     @"SELECT COUNT(*) FROM friendship

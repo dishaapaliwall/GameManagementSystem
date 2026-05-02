@@ -29,6 +29,7 @@ namespace GameManagementSystem
                 LoadProfile();
                 LoadSummary();
                 LoadGames();
+                LoadBuyers();
                 LoadMatchHistory();
                 LoadFriends();
                 LoadFriendRequests();
@@ -44,7 +45,7 @@ namespace GameManagementSystem
         {
             DataGridView[] grids = {
                 dataGridGames, dataGridMatches, 
-                dataGridRequests, dataGridFriends
+                dataGridRequests, dataGridFriends, dataGridView2
             };
 
             foreach (var grid in grids)
@@ -162,7 +163,7 @@ namespace GameManagementSystem
                     g.price,
                     g.release_date,
                     g.approval_status,
-                    COUNT(m.match_id) AS total_matches
+                    COUNT(DISTINCT m.match_id) AS total_matches
                 FROM game g
                 LEFT JOIN match_session m ON g.game_id = m.game_id
                 WHERE g.developer_id=@id
@@ -176,6 +177,42 @@ namespace GameManagementSystem
 
                 dataGridGames.DataSource = dt;
             }
+        }
+
+        private void LoadBuyers()
+        {
+            using (MySqlConnection conn = new MySqlConnection(connStr))
+            {
+                conn.Open();
+
+                string q = @"
+                SELECT 
+                    g.title AS 'Game Title',
+                    g.price AS 'Price',
+                    u.username AS 'Buyer Username',
+                    u.email AS 'Buyer Email',
+                    p.purchase_date AS 'Purchase Date'
+                FROM purchase p
+                JOIN game g ON p.game_id = g.game_id
+                JOIN users u ON p.user_id = u.user_id
+                WHERE g.developer_id = @id
+                ORDER BY p.purchase_date DESC";
+
+                MySqlDataAdapter da = new MySqlDataAdapter(q, conn);
+                da.SelectCommand.Parameters.AddWithValue("@id", userId);
+
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                dataGridView2.DataSource = dt;
+            }
+        }
+
+        private void buttonRefreshPurchased_Click(object sender, EventArgs e)
+        {
+            LoadGames();
+            LoadBuyers();
+            MessageBox.Show("Refreshed! ✅", "My Games", MessageBoxButtons.OK, MessageBoxIcon.None);
         }
 
         private void LoadMatchHistory()
@@ -359,6 +396,11 @@ namespace GameManagementSystem
                 if (friendId == userId)
                 {
                     MessageBox.Show("You cannot add yourself as a friend ❌");
+                    return;
+                }
+                if (friendId.StartsWith("a_"))
+                {
+                    MessageBox.Show("You cannot send friend requests to an Admin ❌");
                     return;
                 }
                 MySqlCommand checkFriend = new MySqlCommand(@"SELECT COUNT(*) FROM friendship WHERE user_id_1=@id AND user_id_2=@fid", conn);

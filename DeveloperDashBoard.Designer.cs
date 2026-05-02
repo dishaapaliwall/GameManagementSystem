@@ -45,6 +45,7 @@ namespace GameManagementSystem
             panel1 = new Panel();
             label1 = new Label();
             panelMyGames = new Panel();
+            label2 = new Label();
             buttonRefreshPurchased = new Button();
             labelMyGames = new Label();
             labelMyGamesSub = new Label();
@@ -52,6 +53,7 @@ namespace GameManagementSystem
             panelMatchHistory = new Panel();
             button1 = new Button();
             labelMatchHistoryTitle = new Label();
+            dataGridView2 = new DataGridView();
             ((System.ComponentModel.ISupportInitialize)dataGridGames).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridMatches).BeginInit();
             panelManageGames.SuspendLayout();
@@ -62,6 +64,7 @@ namespace GameManagementSystem
             panel1.SuspendLayout();
             panelMyGames.SuspendLayout();
             panelMatchHistory.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             SuspendLayout();
             // 
             // labelWelcome
@@ -143,7 +146,7 @@ namespace GameManagementSystem
             dataGridGames.Location = new Point(14, 95);
             dataGridGames.Name = "dataGridGames";
             dataGridGames.RowHeadersWidth = 62;
-            dataGridGames.Size = new Size(714, 889);
+            dataGridGames.Size = new Size(714, 374);
             dataGridGames.TabIndex = 2;
             // 
             // dataGridMatches
@@ -445,6 +448,8 @@ namespace GameManagementSystem
             // panelMyGames
             // 
             panelMyGames.BackColor = Color.OliveDrab;
+            panelMyGames.Controls.Add(dataGridView2);
+            panelMyGames.Controls.Add(label2);
             panelMyGames.Controls.Add(buttonRefreshPurchased);
             panelMyGames.Controls.Add(labelMyGames);
             panelMyGames.Controls.Add(labelMyGamesSub);
@@ -453,6 +458,16 @@ namespace GameManagementSystem
             panelMyGames.Name = "panelMyGames";
             panelMyGames.Size = new Size(744, 1052);
             panelMyGames.TabIndex = 3;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            label2.Location = new Point(14, 499);
+            label2.Name = "label2";
+            label2.Size = new Size(97, 36);
+            label2.TabIndex = 12;
+            label2.Text = "Buyers";
             // 
             // buttonRefreshPurchased
             // 
@@ -467,6 +482,7 @@ namespace GameManagementSystem
             buttonRefreshPurchased.TabIndex = 11;
             buttonRefreshPurchased.Text = "Refresh";
             buttonRefreshPurchased.UseVisualStyleBackColor = false;
+            buttonRefreshPurchased.Click += buttonRefreshPurchased_Click;
             // 
             // labelMyGames
             // 
@@ -483,7 +499,7 @@ namespace GameManagementSystem
             // 
             labelMyGamesSub.AutoSize = true;
             labelMyGamesSub.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            labelMyGamesSub.Location = new Point(0, 55);
+            labelMyGamesSub.Location = new Point(14, 48);
             labelMyGamesSub.Name = "labelMyGamesSub";
             labelMyGamesSub.Size = new Size(222, 36);
             labelMyGamesSub.TabIndex = 1;
@@ -532,6 +548,18 @@ namespace GameManagementSystem
             labelMatchHistoryTitle.TabIndex = 0;
             labelMatchHistoryTitle.Text = "Match History";
             // 
+            // dataGridView2
+            // 
+            dataGridView2.BackgroundColor = Color.DarkOliveGreen;
+            dataGridView2.BorderStyle = BorderStyle.None;
+            dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView2.GridColor = Color.DarkOliveGreen;
+            dataGridView2.Location = new Point(14, 547);
+            dataGridView2.Name = "dataGridView2";
+            dataGridView2.RowHeadersWidth = 62;
+            dataGridView2.Size = new Size(714, 437);
+            dataGridView2.TabIndex = 13;
+            // 
             // DeveloperDashBoard
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
@@ -564,6 +592,7 @@ namespace GameManagementSystem
             panelMyGames.PerformLayout();
             panelMatchHistory.ResumeLayout(false);
             panelMatchHistory.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -614,5 +643,7 @@ namespace GameManagementSystem
         private System.Windows.Forms.Label labelMatchHistory;
         private Button buttonRefreshPurchased;
         private Button button1;
+        private Label label2;
+        private DataGridView dataGridView2;
     }
 }
