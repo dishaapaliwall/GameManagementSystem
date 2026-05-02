@@ -149,8 +149,15 @@ namespace GameManagementSystem
                 try
                 {
                     conn.Open();
-                    string query = "SELECT game_id, title, genre, price, approval_status AS Status FROM game WHERE approval_status IN ('approved', 'rejected')";
-                    MySqlDataAdapter da = new MySqlDataAdapter(query, conn);
+                    // We join with the transaction table to find which admin earned the commission for approving the game.
+                    string query = @"
+                        SELECT g.game_id, g.title, g.genre, g.price, g.approval_status AS Status 
+                        FROM game g
+                        JOIN transaction t ON t.reference_id = CONCAT('COMM_', g.game_id)
+                        WHERE g.approval_status = 'approved' AND t.user_id = @uid";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@uid", userId);
+                    MySqlDataAdapter da = new MySqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
                     da.Fill(dt);
                     dgvGameHistory.DataSource = dt;
