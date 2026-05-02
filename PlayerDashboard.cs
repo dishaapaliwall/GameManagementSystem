@@ -9,7 +9,7 @@ namespace GameManagementSystem
     public partial class PlayerDashboard : Form
     {
         string userId;
-        string connStr = "server=localhost;database=trial_1;uid=root;pwd=schetza@2005;";
+        string connStr = DB.connStr;
 
         public PlayerDashboard(string uid)
         {

@@ -31,7 +31,7 @@ namespace GameManagementSystem
                 return;
             }
 
-            string connStr = "server=localhost;database=trial_1;uid=root;pwd=schetza@2005;";
+            string connStr = DB.connStr;
 
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
@@ -65,7 +65,7 @@ namespace GameManagementSystem
                         }
                         else if (uid.StartsWith("a_"))
                         {
-                            AdminDashBoard a = new AdminDashBoard();
+                            AdminDashBoard a = new AdminDashBoard(uid);
                             a.Show();
                         }
                         else

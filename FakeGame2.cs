@@ -78,7 +78,7 @@ namespace GameManagementSystem
 
         private void SaveScoreToDatabase(int gameId, int score, int duration, string result)
         {
-            string connStr = "server=localhost;database=trial_1;uid=root;pwd=schetza@2005;";
+            string connStr = DB.connStr;
             try
             {
                 using (MySqlConnection conn = new MySqlConnection(connStr))
