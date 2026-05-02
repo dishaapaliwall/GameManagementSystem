@@ -31,7 +31,7 @@ namespace GameManagementSystem
                 return;
             }
 
-            string connStr = "server=localhost;database=trial_2;uid=root;pwd=gyanesh@2006;";
+            string connStr = "server=localhost;database=trial_1;uid=root;pwd=schetza@2005;";
 
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {

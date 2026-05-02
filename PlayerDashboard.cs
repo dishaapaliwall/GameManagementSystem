@@ -9,7 +9,7 @@ namespace GameManagementSystem
     public partial class PlayerDashboard : Form
     {
         string userId;
-        string connStr = "server=localhost;database=trial_2;uid=root;pwd=gyanesh@2006;";
+        string connStr = "server=localhost;database=trial_1;uid=root;pwd=schetza@2005;";
 
         public PlayerDashboard(string uid)
         {
@@ -93,21 +93,19 @@ namespace GameManagementSystem
                 object balance = cmd2.ExecuteScalar();
                 label4.Text = "Balance: ₹ " + (balance == null ? "0" : balance.ToString());
 
-                // AVAILABLE GAMES
+                // AVAILABLE GAMES (game_id visible)
                 DataTable dt = new DataTable();
                 new MySqlDataAdapter("SELECT game_id, title, genre, price, release_date, developer_id FROM game WHERE approval_status='approved'", conn).Fill(dt);
                 dataGridViewAvailable.DataSource = dt;
-                if (dataGridViewAvailable.Columns["game_id"] != null) dataGridViewAvailable.Columns["game_id"].Visible = false;
                 dataGridViewAvailable.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
 
-                // PURCHASED
+                // PURCHASED (game_id visible)
                 DataTable dt2 = new DataTable();
                 MySqlDataAdapter da2 = new MySqlDataAdapter(
                     "SELECT g.game_id, g.title, g.genre, g.price, g.release_date, g.developer_id FROM game g JOIN purchase p ON g.game_id=p.game_id WHERE p.user_id=@id AND g.approval_status='approved'", conn);
                 da2.SelectCommand.Parameters.AddWithValue("@id", userId);
                 da2.Fill(dt2);
                 dataGridViewPurchased.DataSource = dt2;
-                if (dataGridViewPurchased.Columns["game_id"] != null) dataGridViewPurchased.Columns["game_id"].Visible = false;
                 dataGridViewPurchased.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
 
                 // HISTORY
@@ -148,7 +146,7 @@ namespace GameManagementSystem
             }
         }
 
-        // 🔥 HISTORY REFRESH
+        // 🔥 HISTORY REFRESH — Shows every match session for the player
         void LoadHistory()
         {
             using (MySqlConnection conn = new MySqlConnection(connStr))
@@ -156,12 +154,14 @@ namespace GameManagementSystem
                 conn.Open();
 
                 DataTable dtHistory = new DataTable();
+                // Columns: match_id, Game, Score, Result, Started At, Ended At, Status
                 MySqlDataAdapter daHistory = new MySqlDataAdapter(
-                    @"SELECT g.title AS Game,
+                    @"SELECT m.match_id AS 'Match ID',
+                             g.title AS Game,
                              p.score AS Score,
                              p.result AS Result,
-                             m.duration AS 'Duration (sec)',
-                             m.started_at AS 'Played On'
+                             m.started_at AS 'Started At',
+                             m.ended_at AS 'Ended At'
                       FROM participation p
                       JOIN match_session m ON p.match_id = m.match_id
                       JOIN game g ON m.game_id = g.game_id
@@ -183,49 +183,36 @@ namespace GameManagementSystem
                 conn.Open();
                 DataTable dt = new DataTable();
                 MySqlDataAdapter da = new MySqlDataAdapter(
-                    "SELECT transaction_id, amount, transaction_type, transaction_status FROM transaction WHERE user_id=@id", conn);
+                    "SELECT transaction_id, amount AS Amount, transaction_type AS Type, payment_method AS 'Method', reference_id AS 'Ref ID', description AS Description, transaction_status AS Status, created_at AS Date FROM transaction WHERE user_id=@id ORDER BY created_at DESC", conn);
                 da.SelectCommand.Parameters.AddWithValue("@id", userId);
                 da.Fill(dt);
                 dataGridViewTransactions.DataSource = dt;
                 if (dataGridViewTransactions.Columns["transaction_id"] != null) dataGridViewTransactions.Columns["transaction_id"].Visible = false;
-                dataGridViewTransactions.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                dataGridViewTransactions.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             }
         }
 
-        // 🔥 LOAD STATS — shows per-game stats for the logged-in player
+        // 🔥 LOAD STATS — reads directly from player_game_stats table
         private void LoadStats()
         {
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
                 conn.Open();
                 DataTable dt = new DataTable();
+                // All stats come directly from player_game_stats table
                 MySqlDataAdapter da = new MySqlDataAdapter(
                     @"SELECT g.title AS Game,
                              s.total_play_time AS PlayTime,
                              s.experience AS XP,
-                             (SELECT COUNT(*) + 1
-                              FROM (
-                                  SELECT p_inner.user_id, m_inner.game_id, MAX(p_inner.score) as max_score, st_inner.total_play_time as p_time
-                                  FROM participation p_inner
-                                  JOIN match_session m_inner ON p_inner.match_id = m_inner.match_id
-                                  JOIN player_game_stats st_inner ON p_inner.user_id = st_inner.user_id AND m_inner.game_id = st_inner.game_id
-                                  GROUP BY p_inner.user_id, m_inner.game_id
-                              ) AS gb
-                              WHERE gb.game_id = s.game_id
-                                AND (gb.max_score > IFNULL((SELECT MAX(p_me.score) FROM participation p_me JOIN match_session m_me ON p_me.match_id = m_me.match_id WHERE p_me.user_id = s.user_id AND m_me.game_id = s.game_id), 0)
-                                     OR (gb.max_score = IFNULL((SELECT MAX(p_me.score) FROM participation p_me JOIN match_session m_me ON p_me.match_id = m_me.match_id WHERE p_me.user_id = s.user_id AND m_me.game_id = s.game_id), 0)
-                                         AND gb.p_time > s.total_play_time))
-                             ) AS 'Game Rank',
-                             IFNULL((SELECT MAX(p.score) 
-                                     FROM participation p 
-                                     JOIN match_session m ON p.match_id = m.match_id 
-                                     WHERE p.user_id = s.user_id AND m.game_id = s.game_id), 0) AS 'Highest Score'
+                             s.rank_level AS 'Game Rank',
+                             s.best_score AS 'Best Score'
                       FROM player_game_stats s
                       JOIN game g ON s.game_id = g.game_id
                       WHERE s.user_id = @id", conn);
 
                 da.SelectCommand.Parameters.AddWithValue("@id", userId);
                 da.Fill(dt);
+
                 dataGridViewStats.DataSource = dt;
                 dataGridViewStats.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             }
@@ -464,7 +451,61 @@ namespace GameManagementSystem
             }
             else
             {
-                MessageBox.Show("Game not implemented yet.");
+                MessageBox.Show("Game not implemented yet.\nSimulating a quick play (+1 Playtime, +10 XP)...", "Simulation", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                
+                using (MySqlConnection conn = new MySqlConnection(connStr))
+                {
+                    conn.Open();
+                    
+                    // 1. Create Match Session
+                    MySqlCommand cmdMatch = new MySqlCommand(
+                        "INSERT INTO match_session(game_id, started_at, ended_at, duration, match_status) " +
+                        "VALUES(@gid, NOW(), NOW(), 10, 'completed'); SELECT LAST_INSERT_ID();", conn);
+                    cmdMatch.Parameters.AddWithValue("@gid", gameId);
+                    long matchId = Convert.ToInt64(cmdMatch.ExecuteScalar());
+
+                    // 2. Add Participation
+                    MySqlCommand cmdPart = new MySqlCommand(
+                        "INSERT INTO participation(match_id, user_id, score, result) " +
+                        "VALUES(@mid, @uid, 0, 'loss')", conn);
+                    cmdPart.Parameters.AddWithValue("@mid", matchId);
+                    cmdPart.Parameters.AddWithValue("@uid", userId);
+                    cmdPart.ExecuteNonQuery();
+
+                    // 3. Update player_game_stats
+                    MySqlCommand checkStats = new MySqlCommand("SELECT COUNT(*) FROM player_game_stats WHERE user_id=@uid AND game_id=@gid", conn);
+                    checkStats.Parameters.AddWithValue("@uid", userId);
+                    checkStats.Parameters.AddWithValue("@gid", gameId);
+                    int hasStats = Convert.ToInt32(checkStats.ExecuteScalar());
+
+                    if (hasStats > 0)
+                    {
+                        MySqlCommand cmdStats = new MySqlCommand(
+                            "UPDATE player_game_stats SET total_play_time = total_play_time + 1, " +
+                            "experience = experience + 10 " +
+                            "WHERE user_id=@uid AND game_id=@gid", conn);
+                        cmdStats.Parameters.AddWithValue("@uid", userId);
+                        cmdStats.Parameters.AddWithValue("@gid", gameId);
+                        cmdStats.ExecuteNonQuery();
+                    }
+                    else
+                    {
+                        MySqlCommand cmdStats = new MySqlCommand(
+                            "INSERT INTO player_game_stats(user_id, game_id, total_play_time, experience, rank_level, best_score) " +
+                            "VALUES(@uid, @gid, 1, 10, 1, 0)", conn);
+                        cmdStats.Parameters.AddWithValue("@uid", userId);
+                        cmdStats.Parameters.AddWithValue("@gid", gameId);
+                        cmdStats.ExecuteNonQuery();
+                    }
+                    
+                    // 4. Update Rankings
+                    new MySqlCommand(
+                        "UPDATE player_game_stats pgs SET rank_level = " +
+                        "(SELECT COUNT(*) + 1 FROM (SELECT user_id, game_id, best_score FROM player_game_stats) AS t " +
+                        "WHERE t.game_id = pgs.game_id AND t.best_score > pgs.best_score) " +
+                        "WHERE pgs.game_id = @gid", conn)
+                    { Parameters = { new MySqlParameter("@gid", gameId) } }.ExecuteNonQuery();
+                }
             }
 
             LoadHistory(); // 🔥 refresh after game
@@ -482,6 +523,7 @@ namespace GameManagementSystem
 
             int gameId = Convert.ToInt32(dataGridViewAvailable.CurrentRow.Cells["game_id"].Value);
             decimal price = Convert.ToDecimal(dataGridViewAvailable.CurrentRow.Cells["price"].Value);
+            string gameTitle = dataGridViewAvailable.CurrentRow.Cells["title"]?.Value?.ToString() ?? "Unknown Game";
 
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
@@ -534,12 +576,15 @@ namespace GameManagementSystem
                     }.ExecuteNonQuery();
 
                     // LOG TRANSACTION
+                    string refId = "GAME-" + DateTime.Now.Ticks.ToString().Substring(8);
                     new MySqlCommand(
-                        "INSERT INTO transaction(user_id, amount, transaction_type, transaction_status) VALUES(@uid2, @amt2, 'purchase', 'completed')", conn, trans)
+                        "INSERT INTO transaction(user_id, amount, transaction_type, description, reference_id, payment_method, transaction_status) VALUES(@uid2, @amt2, 'purchase', @desc, @ref, 'Gameverse Wallet', 'completed')", conn, trans)
                     {
                         Parameters = {
                             new MySqlParameter("@uid2", userId),
-                            new MySqlParameter("@amt2", price)
+                            new MySqlParameter("@amt2", price),
+                            new MySqlParameter("@desc", "Purchased: " + gameTitle),
+                            new MySqlParameter("@ref", refId)
                         }
                     }.ExecuteNonQuery();
 
@@ -569,10 +614,12 @@ namespace GameManagementSystem
                 conn.Open();
 
                 // 1. LOG TRANSACTION AS PENDING
+                string refId = "BANK-" + DateTime.Now.Ticks.ToString().Substring(8);
                 MySqlCommand cmd = new MySqlCommand(
-                    "INSERT INTO transaction(user_id, amount, transaction_type, transaction_status) VALUES(@uid, @amt, 'deposit', 'pending'); SELECT LAST_INSERT_ID();", conn);
+                    "INSERT INTO transaction(user_id, amount, transaction_type, description, reference_id, payment_method, transaction_status) VALUES(@uid, @amt, 'deposit', 'Wallet top-up', @ref, 'Bank Transfer', 'pending'); SELECT LAST_INSERT_ID();", conn);
                 cmd.Parameters.AddWithValue("@uid", userId);
                 cmd.Parameters.AddWithValue("@amt", amount);
+                cmd.Parameters.AddWithValue("@ref", refId);
                 newTransactionId = Convert.ToInt64(cmd.ExecuteScalar());
             }
 
@@ -638,6 +685,12 @@ namespace GameManagementSystem
         private void dataGridViewPurchased_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
+        }
+
+        private void btnLogout_Click(object sender, EventArgs e)
+        {
+            new Form1().Show();
+            this.Close();
         }
     }
 }

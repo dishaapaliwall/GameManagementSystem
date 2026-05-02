@@ -34,6 +34,7 @@ namespace GameManagementSystem
             buttonRefreshPurchased = new Button();
             buttonRefreshAvailable = new Button();
             btnPlayGame = new Button();
+            btnLogout = new Button();
             dataGridView1 = new DataGridView();
             panel1 = new Panel();
             label3 = new Label();
@@ -177,6 +178,21 @@ namespace GameManagementSystem
             btnPlayGame.UseVisualStyleBackColor = false;
             btnPlayGame.Click += btnPlayGame_Click;
             // 
+            // btnLogout
+            // 
+            btnLogout.BackColor = Color.DarkOliveGreen;
+            btnLogout.FlatAppearance.BorderSize = 0;
+            btnLogout.FlatStyle = FlatStyle.Flat;
+            btnLogout.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnLogout.ForeColor = Color.White;
+            btnLogout.Location = new Point(1976, 80);
+            btnLogout.Name = "btnLogout";
+            btnLogout.Size = new Size(120, 40);
+            btnLogout.TabIndex = 4;
+            btnLogout.Text = "Logout";
+            btnLogout.UseVisualStyleBackColor = false;
+            btnLogout.Click += btnLogout_Click;
+            // 
             // dataGridView1
             // 
             dataGridView1.BackgroundColor = Color.DarkOliveGreen;
@@ -195,6 +211,7 @@ namespace GameManagementSystem
             panel1.Controls.Add(label3);
             panel1.Controls.Add(label2);
             panel1.Controls.Add(label4);
+            panel1.Controls.Add(btnLogout);
             panel1.Location = new Point(12, 120);
             panel1.Name = "panel1";
             panel1.Size = new Size(2220, 142);
@@ -628,6 +645,7 @@ namespace GameManagementSystem
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
+            AutoScroll = true;
             ClientSize = new Size(2244, 1370);
             Controls.Add(panelSocial);
             Controls.Add(panelHistory);
@@ -637,7 +655,6 @@ namespace GameManagementSystem
             Controls.Add(label1);
             Controls.Add(panel1);
             Controls.Add(dataGridView1);
-            AutoScroll = true;
             Name = "PlayerDashboard";
             Text = "PlayerDashboard";
             Load += PlayerDashboard_Load;
@@ -710,6 +727,7 @@ namespace GameManagementSystem
         private Label label13;
         private Label label12;
         private Button buttonRefreshStats;
+        private Button btnLogout;
     }
 }
 

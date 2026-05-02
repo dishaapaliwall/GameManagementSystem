@@ -8,7 +8,7 @@ namespace GameManagementSystem
     public partial class DeveloperDashBoard : Form
     {
         string userId;
-        string connStr = "server=localhost;database=trial_2;uid=root;pwd=gyanesh@2006;";
+        string connStr = "server=localhost;database=trial_1;uid=root;pwd=schetza@2005;";
 
         public DeveloperDashBoard(string uid)
         {
@@ -178,7 +178,6 @@ namespace GameManagementSystem
             }
         }
 
-        // 🔹 MATCH HISTORY
         private void LoadMatchHistory()
         {
             using (MySqlConnection conn = new MySqlConnection(connStr))
@@ -188,14 +187,15 @@ namespace GameManagementSystem
                 string q = @"
                 SELECT 
                     m.match_id,
+                    p.user_id AS Player_ID,
                     g.game_id,
                     g.title,
                     m.started_at,
                     m.ended_at,
-                    m.duration,
-                    m.match_status
+                    m.duration
                 FROM match_session m
                 JOIN game g ON m.game_id = g.game_id
+                LEFT JOIN participation p ON m.match_id = p.match_id
                 WHERE g.developer_id=@id";
 
                 MySqlDataAdapter da = new MySqlDataAdapter(q, conn);
@@ -302,9 +302,9 @@ namespace GameManagementSystem
                     DataTable dt = new DataTable();
                     MySqlDataAdapter da = new MySqlDataAdapter(
                         @"SELECT u.user_id AS FriendID, u.username AS FriendName, s.status AS Status
-                          FROM socials s
-                          JOIN users u ON s.user2 = u.user_id
-                          WHERE s.user1 = @id AND s.status = 'accepted'", conn);
+                          FROM friendship s
+                          JOIN users u ON s.user_id_2 = u.user_id
+                          WHERE s.user_id_1 = @id AND s.status = 'accepted'", conn);
                     da.SelectCommand.Parameters.AddWithValue("@id", userId);
                     da.Fill(dt);
                     dataGridFriends.DataSource = dt;
@@ -324,9 +324,9 @@ namespace GameManagementSystem
                     DataTable dt = new DataTable();
                     MySqlDataAdapter da = new MySqlDataAdapter(
                         @"SELECT u.user_id AS SenderID, u.username AS SenderName, s.status AS Status
-                          FROM socials s
-                          JOIN users u ON s.user1 = u.user_id
-                          WHERE s.user2 = @id AND s.status = 'pending'", conn);
+                          FROM friendship s
+                          JOIN users u ON s.user_id_1 = u.user_id
+                          WHERE s.user_id_2 = @id AND s.status = 'pending'", conn);
                     da.SelectCommand.Parameters.AddWithValue("@id", userId);
                     da.Fill(dt);
                     dataGridRequests.DataSource = dt;
@@ -361,7 +361,7 @@ namespace GameManagementSystem
                     MessageBox.Show("You cannot add yourself as a friend ❌");
                     return;
                 }
-                MySqlCommand checkFriend = new MySqlCommand(@"SELECT COUNT(*) FROM socials WHERE user1=@id AND user2=@fid", conn);
+                MySqlCommand checkFriend = new MySqlCommand(@"SELECT COUNT(*) FROM friendship WHERE user_id_1=@id AND user_id_2=@fid", conn);
                 checkFriend.Parameters.AddWithValue("@id", userId);
                 checkFriend.Parameters.AddWithValue("@fid", friendId);
                 if (Convert.ToInt32(checkFriend.ExecuteScalar()) > 0)
@@ -369,7 +369,7 @@ namespace GameManagementSystem
                     MessageBox.Show("Friend request already exists or you are already friends ❌");
                     return;
                 }
-                MySqlCommand insertCmd = new MySqlCommand("INSERT INTO socials(user1, user2, status, since_date) VALUES(@id, @fid, 'pending', NOW())", conn);
+                MySqlCommand insertCmd = new MySqlCommand("INSERT INTO friendship(user_id_1, user_id_2, status, created_at) VALUES(@id, @fid, 'pending', NOW())", conn);
                 insertCmd.Parameters.AddWithValue("@id", userId);
                 insertCmd.Parameters.AddWithValue("@fid", friendId);
                 insertCmd.ExecuteNonQuery();
@@ -389,12 +389,12 @@ namespace GameManagementSystem
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
                 conn.Open();
-                MySqlCommand cmd = new MySqlCommand("UPDATE socials SET status='accepted' WHERE user1=@s AND user2=@me", conn);
+                MySqlCommand cmd = new MySqlCommand("UPDATE friendship SET status='accepted' WHERE user_id_1=@s AND user_id_2=@me", conn);
                 cmd.Parameters.AddWithValue("@s", senderId);
                 cmd.Parameters.AddWithValue("@me", userId);
                 cmd.ExecuteNonQuery();
 
-                MySqlCommand cmd2 = new MySqlCommand("INSERT IGNORE INTO socials (user1, user2, status, since_date) VALUES (@me, @s, 'accepted', NOW())", conn);
+                MySqlCommand cmd2 = new MySqlCommand("INSERT IGNORE INTO friendship (user_id_1, user_id_2, status, created_at) VALUES (@me, @s, 'accepted', NOW())", conn);
                 cmd2.Parameters.AddWithValue("@s", senderId);
                 cmd2.Parameters.AddWithValue("@me", userId);
                 cmd2.ExecuteNonQuery();
@@ -414,7 +414,7 @@ namespace GameManagementSystem
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
                 conn.Open();
-                MySqlCommand cmd = new MySqlCommand("UPDATE socials SET status='rejected' WHERE user1=@s AND user2=@me", conn);
+                MySqlCommand cmd = new MySqlCommand("UPDATE friendship SET status='declined' WHERE user_id_1=@s AND user_id_2=@me", conn);
                 cmd.Parameters.AddWithValue("@s", senderId);
                 cmd.Parameters.AddWithValue("@me", userId);
                 cmd.ExecuteNonQuery();

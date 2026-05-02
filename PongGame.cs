@@ -206,6 +206,18 @@ namespace GameManagementSystem
 
             playerScore = 0;
             computerScore = 0;
+            userId = null; // Mark as saved
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(userId))
+            {
+                // Game was interrupted, save what we have
+                string result = (playerScore > computerScore) ? "win" : "loss";
+                SaveScoreToDatabase(gameId, playerScore, result);
+            }
+            base.OnFormClosing(e);
         }
 
         private void SaveScoreToDatabase(int gameId, int score, string result)
@@ -239,7 +251,7 @@ namespace GameManagementSystem
                     cmdPart.Parameters.AddWithValue("@res", result);
                     cmdPart.ExecuteNonQuery();
 
-                    // 3. Update player_game_stats
+                    // 3. Update player_game_stats (with best_score)
                     MySqlCommand checkStats = new MySqlCommand("SELECT COUNT(*) FROM player_game_stats WHERE user_id=@uid AND game_id=@gid", conn);
                     checkStats.Parameters.AddWithValue("@uid", userId);
                     checkStats.Parameters.AddWithValue("@gid", gameId);
@@ -250,38 +262,36 @@ namespace GameManagementSystem
                     if (hasStats > 0)
                     {
                         MySqlCommand cmdStats = new MySqlCommand(
-                            "UPDATE player_game_stats SET total_play_time = total_play_time + @dur, experience = experience + @xp WHERE user_id=@uid AND game_id=@gid; " +
-                            "UPDATE player_game_stats s SET rank_level = ( " +
-                            "    SELECT COUNT(*) + 1 " +
-                            "    FROM ( " +
-                            "        SELECT p_in.user_id, m_in.game_id, MAX(p_in.score) as mscore, st_in.total_play_time as p_time " +
-                            "        FROM participation p_in " +
-                            "        JOIN match_session m_in ON p_in.match_id = m_in.match_id " +
-                            "        JOIN player_game_stats st_in ON p_in.user_id = st_in.user_id AND m_in.game_id = st_in.game_id " +
-                            "        GROUP BY p_in.user_id, m_in.game_id " +
-                            "    ) AS gb " +
-                            "    WHERE gb.game_id = s.game_id " +
-                            "      AND (gb.mscore > (SELECT IFNULL(MAX(p_me.score), 0) FROM participation p_me JOIN match_session m_me ON p_me.match_id = m_me.match_id WHERE p_me.user_id = s.user_id AND m_me.game_id = s.game_id) " +
-                            "           OR (gb.mscore = (SELECT IFNULL(MAX(p_me.score), 0) FROM participation p_me JOIN match_session m_me ON p_me.match_id = m_me.match_id WHERE p_me.user_id = s.user_id AND m_me.game_id = s.game_id) " +
-                            "               AND gb.p_time > s.total_play_time)) " +
-                            ") WHERE game_id = @gid;", conn);
+                            "UPDATE player_game_stats SET total_play_time = total_play_time + 1, " +
+                            "experience = experience + @xp, " +
+                            "best_score = GREATEST(best_score, @score) " +
+                            "WHERE user_id=@uid AND game_id=@gid", conn);
                         cmdStats.Parameters.AddWithValue("@uid", userId);
                         cmdStats.Parameters.AddWithValue("@gid", gameId);
-                        cmdStats.Parameters.AddWithValue("@dur", duration);
                         cmdStats.Parameters.AddWithValue("@xp", xpEarned);
+                        cmdStats.Parameters.AddWithValue("@score", score);
                         cmdStats.ExecuteNonQuery();
                     }
                     else
                     {
                         MySqlCommand cmdStats = new MySqlCommand(
-                            "INSERT INTO player_game_stats(user_id, game_id, total_play_time, experience, rank_level) " +
-                            "VALUES(@uid, @gid, @dur, @xp, 1)", conn);
+                            "INSERT INTO player_game_stats(user_id, game_id, total_play_time, experience, rank_level, best_score) " +
+                            "VALUES(@uid, @gid, 1, @xp, 1, @score)", conn);
                         cmdStats.Parameters.AddWithValue("@uid", userId);
                         cmdStats.Parameters.AddWithValue("@gid", gameId);
-                        cmdStats.Parameters.AddWithValue("@dur", duration);
                         cmdStats.Parameters.AddWithValue("@xp", xpEarned);
+                        cmdStats.Parameters.AddWithValue("@score", score);
                         cmdStats.ExecuteNonQuery();
                     }
+
+                    // 4. Recalculate rank_level for ALL players of this game
+                    MySqlCommand cmdRank = new MySqlCommand(
+                        "UPDATE player_game_stats pgs SET rank_level = " +
+                        "(SELECT COUNT(*) + 1 FROM (SELECT user_id, game_id, best_score FROM player_game_stats) AS t " +
+                        "WHERE t.game_id = pgs.game_id AND t.best_score > pgs.best_score) " +
+                        "WHERE pgs.game_id = @gid", conn);
+                    cmdRank.Parameters.AddWithValue("@gid", gameId);
+                    cmdRank.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)
@@ -289,5 +299,7 @@ namespace GameManagementSystem
                 MessageBox.Show("Error saving score: " + ex.Message);
             }
         }
+
+
     }
 }
