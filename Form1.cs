@@ -31,7 +31,7 @@ namespace GameManagementSystem
                 return;
             }
 
-            string connStr = "server=localhost;database=trial_1;uid=root;pwd=schetza@2005;";
+            string connStr = "server=localhost;database=trial_2;uid=root;pwd=gyanesh@2006;";
 
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
@@ -49,26 +49,35 @@ namespace GameManagementSystem
 
                     if (result != null)
                     {
-                        // SUCCESS
                         string uid = result.ToString();
 
                         MessageBox.Show("Login Successful!");
 
-                        // OPEN PLAYER DASHBOARD
                         if (uid.StartsWith("p_"))
                         {
                             PlayerDashboard p = new PlayerDashboard(uid);
                             p.Show();
-                            this.Hide();
+                        }
+                        else if (uid.StartsWith("d_"))
+                        {
+                            DeveloperDashBoard d = new DeveloperDashBoard(uid);
+                            d.Show();
+                        }
+                        else if (uid.StartsWith("a_"))
+                        {
+                            AdminDashBoard a = new AdminDashBoard();
+                            a.Show();
                         }
                         else
                         {
-                            MessageBox.Show("Only Player Dashboard available right now");
+                            MessageBox.Show("Unknown role!");
+                            return;
                         }
+
+                        this.Hide();
                     }
                     else
                     {
-                        // INVALID
                         labelError.Text = "Invalid Credentials";
                         labelError.Visible = true;
                     }
