@@ -35,3 +35,12 @@ To run this project locally, ensure you have the following installed:
    ```bash
    git clone https://github.com/yourusername/GameManagementSystem.git
    cd GameManagementSystem
+4. **Build & Run:**
+   - Press `F5` or click **Start** in Visual Studio to build and run the application.
+     
+## 📸 Screenshots
+
+
+
+## 📚 Documentation & Viva Notes
+This project was built to demonstrate core Database Management Systems (DBMS) concepts. It thoroughly implements ER Modeling, Normalization, SQL Joins, Triggers, Transactions, and Stored Procedures.
